@@ -1,0 +1,6 @@
+{
+  "name": "스페인어 퇴근 단어 마스터 600 / Maestro de Vocabulario 600",
+  "description": "1~30회차 600단어 완벽 마스터! 한국어·Español 100% 단일 언어 분리 모드, 라틴아메리카 에콰도르(es-EC) 발음, 스피드·철자·집중공부·실전 시험을 제공하는 어휘 학습 애플리케이션",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

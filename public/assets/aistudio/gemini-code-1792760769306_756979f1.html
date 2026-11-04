@@ -1,0 +1,2218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>스페인어 퇴근 단어 마스터 (1~30회차 600단어 완전판)</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-soft: #eef2ff;
+      --success: #10b981;
+      --success-bg: #ecfdf5;
+      --danger: #ef4444;
+      --danger-bg: #fef2f2;
+      --warning: #f59e0b;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-sub: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); display: flex; justify-content: center; min-height: 100vh; padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom) 16px; }
+    .app-container { width: 100%; max-width: 500px; display: flex; flex-direction: column; padding-top: 10px; padding-bottom: 24px; position: relative; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px; }
+    header h1 { font-size: 1.2rem; font-weight: 800; color: #0f172a; }
+
+    .btn-manual-trigger { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; font-size: 0.75rem; font-weight: 800; border-radius: 8px; border: 1.5px solid var(--primary); background: var(--primary-soft); color: var(--primary); cursor: pointer; }
+    .btn-manual-trigger:active { transform: scale(0.96); background: #e0e7ff; }
+
+    /* 30회차 네비게이션 */
+    .round-nav-wrap { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; background: #ffffff; padding: 6px 10px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+    .nav-arrow-btn { padding: 8px 12px; font-size: 0.85rem; font-weight: 800; border-radius: 10px; border: 1px solid var(--border); background: #f8fafc; color: var(--primary); cursor: pointer; }
+    .nav-arrow-btn:active { background: #e2e8f0; }
+    .round-select-box { flex: 1; padding: 8px 10px; font-size: 0.92rem; font-weight: 800; border-radius: 10px; border: 2px solid var(--primary); color: #0f172a; background: #ffffff; text-align: center; outline: none; }
+
+    /* 5개 모드 탭 */
+    .tabs { display: grid; grid-template-columns: repeat(5, 1fr); background: #e2e8f0; border-radius: 12px; padding: 3px; margin-bottom: 12px; gap: 2px; }
+    .tab-btn { padding: 8px 1px; font-size: 0.72rem; font-weight: 800; border: none; background: transparent; border-radius: 8px; color: var(--text-sub); cursor: pointer; text-align: center; white-space: nowrap; }
+    .tab-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.06); }
+
+    .view-card { background: var(--card-bg); border-radius: 18px; padding: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); border: 1px solid var(--border); display: none; flex-direction: column; }
+    .view-card.active { display: flex; }
+
+    .info-banner-40 { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 8px 10px; text-align: center; font-size: 0.78rem; font-weight: 700; color: #166534; margin-bottom: 10px; }
+    
+    .progress-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .progress-bar-bg { flex: 1; height: 7px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.25s ease; }
+    .progress-count { font-size: 0.78rem; font-weight: 700; color: var(--text-sub); }
+
+    .question-box { text-align: center; padding: 16px 12px; background: #f8fafc; border-radius: 14px; margin-bottom: 12px; border: 1px solid #edf2f7; position: relative; }
+    .question-badge { display: inline-block; font-size: 0.7rem; font-weight: 700; color: var(--primary); background: #e0e7ff; padding: 3px 9px; border-radius: 20px; margin-bottom: 6px; }
+    .question-badge.korean-target { background: #ecfdf5; color: #065f46; }
+    .question-badge.review-tag { background: #fef3c7; color: #b45309; }
+    .question-word { font-size: 1.55rem; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; margin: 4px 0; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+
+    .card-tools-bar { display: flex; justify-content: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .card-tool-btn { padding: 5px 10px; font-size: 0.75rem; font-weight: 800; border-radius: 16px; border: 1px solid var(--border); background: #ffffff; color: #334155; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+    .card-tool-btn:active { background: #f1f5f9; transform: scale(0.96); }
+    .card-tool-btn.btn-prev-tool { border-color: #cbd5e1; color: #1e293b; background: #f8fafc; }
+    .card-tool-btn.btn-ans-tool { border-color: #10b981; color: #047857; background: #ecfdf5; }
+    .key-hint-pill { font-size: 0.65rem; font-weight: 900; background: #e2e8f0; color: #475569; padding: 1px 4px; border-radius: 4px; }
+
+    /* 심층 어원 & 해마연상법 프리미엄 패널 스타일 */
+    .card-inline-panel { display: none; margin-top: 12px; padding: 14px; border-radius: 12px; font-size: 0.84rem; text-align: left; line-height: 1.6; animation: popIn 0.2s ease; }
+    .card-inline-panel.etym-panel { background: #ffffff; border: 1.5px solid #c7d2fe; color: #1e293b; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.06); }
+    .card-inline-panel.mnemo-panel { background: #fffbeb; border: 1.5px solid #fcd34d; color: #78350f; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08); }
+    .card-inline-panel.ans-panel { background: #ecfdf5; border: 1.5px solid #10b981; color: #065f46; font-size: 0.95rem; font-weight: 800; text-align: center; }
+
+    .etym-sec-title { font-size: 0.88rem; font-weight: 900; color: var(--primary); margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1.5px solid #eef2ff; display: flex; align-items: center; gap: 5px; }
+    .etym-part-list { margin: 6px 0 8px 0; border-left: 3px solid var(--primary); background: #f8fafc; padding: 8px 10px; border-radius: 0 8px 8px 0; }
+    .etym-cognates-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+    .etym-cognate-item { margin-bottom: 4px; font-size: 0.81rem; color: #334155; }
+    .etym-cognate-item b { color: #0f172a; }
+    .etym-nuance-box { background: #eef2ff; border-radius: 8px; padding: 9px 11px; color: #1e1b4b; font-size: 0.82rem; margin-top: 6px; }
+
+    .mnemo-head-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #fde68a; padding-bottom: 6px; margin-bottom: 8px; flex-wrap: wrap; gap: 4px; }
+    .mnemo-phonetic-title { font-size: 0.92rem; font-weight: 900; color: #92400e; }
+    .mnemo-phonetic-badge { background: #fef3c7; border: 1px solid #f59e0b; color: #b45309; padding: 1px 6px; border-radius: 6px; font-size: 0.82rem; margin: 0 3px; }
+    .mnemo-story-card { background: #ffffff; border: 1px solid #fde68a; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; color: #451a03; font-size: 0.85rem; line-height: 1.55; }
+    .mnemo-story-card b { color: #d97706; font-weight: 800; }
+    .btn-mnemo-cycle { padding: 4px 10px; border-radius: 8px; border: 1px solid #f59e0b; background: #fef3c7; color: #92400e; font-size: 0.74rem; font-weight: 800; cursor: pointer; }
+    .btn-mnemo-cycle:active { background: #fde68a; }
+
+    .tts-btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; border-radius: 20px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-size: 0.78rem; font-weight: 700; cursor: pointer; margin-top: 4px; }
+    .tts-btn:active { background: #f1f5f9; transform: scale(0.96); }
+
+    .input-box { width: 100%; padding: 13px 14px; font-size: 1.15rem; border: 2px solid var(--border); border-radius: 12px; outline: none; text-align: center; font-weight: 700; color: #0f172a; transition: all 0.2s ease; }
+    .input-box:focus { border-color: var(--primary); }
+    .input-box.correct-input { border-color: var(--success) !important; background: var(--success-bg) !important; color: #065f46 !important; }
+    .input-box.wrong-input { border-color: var(--danger) !important; background: var(--danger-bg) !important; color: #991b1b !important; }
+
+    /* 띨데 버튼 */
+    .tilde-toolbar { display: flex; gap: 6px; justify-content: center; margin: 10px 0 12px; }
+    .tilde-btn { position: relative; width: 44px; height: 44px; background: #f1f5f9; border: 1.5px solid var(--border); border-radius: 10px; font-size: 1.15rem; font-weight: 800; color: #1e293b; cursor: pointer; display: flex; align-items: center; justify-content: center; padding-top: 6px; }
+    .tilde-btn:active { background: #cbd5e1; transform: scale(0.95); }
+    .tilde-num-badge { position: absolute; top: 2px; left: 3px; font-size: 0.62rem; font-weight: 900; line-height: 1; background: #e0e7ff; color: var(--primary); border: 1px solid #c7d2fe; border-radius: 4px; padding: 1px 3px; }
+
+    .btn-main { width: 100%; padding: 13px; font-size: 0.95rem; font-weight: 800; border: none; border-radius: 12px; background: var(--primary); color: #ffffff; cursor: pointer; transition: background 0.2s ease; }
+    .btn-main:active { transform: scale(0.98); background: var(--primary-hover); }
+
+    .action-btn-group { display: flex; gap: 8px; margin-top: 10px; }
+    .btn-retry { flex: 1; padding: 12px 6px; font-size: 0.88rem; font-weight: 800; border: 1.5px solid var(--warning); border-radius: 12px; background: #ffffff; color: #b45309; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .btn-retry:active { background: #fef3c7; }
+    .retry-key-badge { display: inline-flex; align-items: center; justify-content: center; width: 19px; height: 19px; background: #fef3c7; color: #b45309; border: 1px solid #fde68a; border-radius: 5px; font-size: 0.72rem; font-weight: 900; }
+    .btn-next-action { flex: 2; padding: 12px; font-size: 0.95rem; font-weight: 800; border: none; border-radius: 12px; background: var(--primary); color: #ffffff; cursor: pointer; }
+    .btn-next-action:active { background: var(--primary-hover); }
+
+    .feedback-banner { margin-top: 12px; padding: 12px 14px; border-radius: 12px; text-align: left; display: none; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes popIn { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .feedback-banner.correct { display: block; background: var(--success-bg); border: 2px solid var(--success); color: #065f46; }
+    .feedback-banner.wrong { display: block; background: var(--danger-bg); border: 2px solid var(--danger); color: #991b1b; }
+
+    .feedback-content-wrap { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .feedback-text-area { flex: 1; line-height: 1.45; font-size: 0.92rem; }
+
+    .focus-check-label { display: inline-flex; align-items: center; gap: 5px; padding: 6px 9px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.75rem; font-weight: 800; color: #334155; cursor: pointer; user-select: none; flex-shrink: 0; }
+    .focus-check-label.checked { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+    .focus-check-label input { accent-color: var(--warning); width: 14px; height: 14px; cursor: pointer; }
+
+    .speed-bonus-spelling-box { margin-top: 10px; padding: 12px; background: #f8fafc; border: 2px dashed #818cf8; border-radius: 14px; animation: popIn 0.25s ease; }
+    .speed-bonus-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .speed-bonus-title { font-size: 0.82rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 5px; }
+    .speed-bonus-skip-tip { font-size: 0.72rem; color: var(--text-sub); font-weight: 700; }
+
+    /* 4지선다 보기 */
+    .choices-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .choice-btn { width: 100%; padding: 12px 14px; text-align: left; font-size: 0.95rem; font-weight: 700; border-radius: 12px; border: 2px solid var(--border); background: #ffffff; color: #1e293b; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.15s ease; }
+    .choice-left-wrap { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .choice-num-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; background: #f1f5f9; color: var(--primary); font-size: 0.82rem; font-weight: 900; flex-shrink: 0; border: 1px solid var(--border); }
+    .choice-text-val { word-break: break-word; }
+    .choice-tag-hint { opacity: 0.4; font-size: 0.75rem; font-weight: 600; flex-shrink: 0; margin-left: 8px; }
+
+    .choice-btn.selected-correct { border-color: var(--success) !important; background: var(--success-bg) !important; color: #065f46 !important; }
+    .choice-btn.selected-correct .choice-num-badge { background: #10b981 !important; color: #ffffff !important; border-color: #059669 !important; }
+    .choice-btn.selected-wrong { border-color: var(--danger) !important; background: var(--danger-bg) !important; color: #991b1b !important; }
+    .choice-btn.selected-wrong .choice-num-badge { background: #ef4444 !important; color: #ffffff !important; border-color: #dc2626 !important; }
+
+    /* 단어장 리스트 */
+    .vocab-list { max-height: 64vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .vocab-item { display: flex; justify-content: space-between; align-items: center; padding: 11px 13px; background: #f8fafc; border-radius: 12px; border: 1px solid var(--border); min-height: 52px; }
+    .vocab-item-left { display: flex; align-items: center; gap: 7px; flex: 1; min-width: 0; }
+    .vocab-es { font-weight: 800; color: var(--primary); font-size: 0.98rem; }
+    .vocab-ko { font-size: 0.85rem; color: #334155; font-weight: 600; text-align: right; flex-shrink: 0; margin-left: 8px; }
+    .mini-speaker { background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 2px; flex-shrink: 0; }
+
+    /* 가림막 머릿말 버튼 & 하얀색 박스 */
+    .vocab-mask-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; padding: 2px 0; }
+    .mask-header-btn { flex: 1; padding: 9px 8px; font-size: 0.82rem; font-weight: 800; border-radius: 10px; border: 1.5px solid var(--border); background: #ffffff; color: #334155; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .mask-header-btn:active { transform: scale(0.97); }
+    .mask-header-btn.active-mask { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
+
+    .maskable-text { display: inline-block; padding: 3px 6px; border-radius: 6px; transition: all 0.15s ease; position: relative; cursor: pointer; }
+    .maskable-text.is-masked { background-color: #ffffff !important; color: transparent !important; border: 1.5px solid #cbd5e1 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05); user-select: none; min-height: 26px; min-width: 64px; }
+    .maskable-text.is-masked::after { content: "터치"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 0.68rem; font-weight: 700; color: #94a3b8; letter-spacing: -0.5px; }
+    .speed-masked-target { pointer-events: auto !important; cursor: pointer; }
+
+    /* 시험 화면 */
+    .exam-start-box { text-align: center; padding: 20px 8px; }
+    .exam-rule-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin: 14px 0 18px; text-align: left; font-size: 0.85rem; line-height: 1.6; }
+    .exam-rule-card b { color: var(--primary); }
+    .exam-score-card { background: #ffffff; border: 2px solid var(--primary); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 16px; }
+    .exam-total-score { font-size: 3.2rem; font-weight: 900; color: var(--primary); line-height: 1; margin: 10px 0; }
+    .score-breakdown-box { display: flex; gap: 8px; margin: 14px 0; }
+    .score-sub-badge { flex: 1; padding: 10px; background: #f8fafc; border-radius: 10px; border: 1px solid var(--border); font-size: 0.8rem; }
+    .score-sub-badge b { display: block; font-size: 1.1rem; color: #0f172a; margin-top: 4px; }
+    .wrong-review-list { max-height: 38vh; overflow-y: auto; text-align: left; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .wrong-item { background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 10px 12px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+
+    .focus-folder-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1.5px solid var(--border); }
+    .btn-clear-focus { padding: 5px 9px; font-size: 0.72rem; font-weight: 700; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #64748b; cursor: pointer; }
+    .btn-delete-item { background: transparent; border: none; color: #ef4444; font-size: 1.1rem; cursor: pointer; padding: 4px 6px; }
+
+    /* 단축키 모달 창 */
+    .modal-backdrop { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); z-index: 999; justify-content: center; align-items: center; padding: 16px; backdrop-filter: blur(2px); }
+    .modal-box { background: #ffffff; width: 100%; max-width: 440px; border-radius: 18px; padding: 20px 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1.5px solid var(--border); }
+    .modal-header h3 { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
+    .modal-close-btn { background: transparent; border: none; font-size: 1.2rem; font-weight: 800; color: #64748b; cursor: pointer; }
+    .shortcut-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .shortcut-table th { background: #f8fafc; text-align: left; padding: 8px 10px; color: var(--text-sub); font-weight: 800; border-bottom: 1px solid var(--border); }
+    .shortcut-table td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+    .key-badge { display: inline-block; padding: 2px 7px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 5px; font-weight: 900; color: var(--primary); font-family: monospace; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <header>
+    <h1>ES 스페인어 퇴근 단어 마스터</h1>
+    <button class="btn-manual-trigger" onclick="openShortcutModal()">⌨️ 단축키 안내</button>
+  </header>
+
+  <div class="round-nav-wrap">
+    <button class="nav-arrow-btn" onclick="stepRound(-1)">◀ 이전</button>
+    <select id="round-select" class="round-select-box" onchange="changeRound(parseInt(this.value))"></select>
+    <button class="nav-arrow-btn" onclick="stepRound(1)">다음 ▶</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('speed')">⚡ 스피드</button>
+    <button class="tab-btn" onclick="switchTab('write')">✍️ 철자</button>
+    <button class="tab-btn" onclick="switchTab('list')">📋 단어장</button>
+    <button class="tab-btn" onclick="switchTab('focus')">📁 집중공부</button>
+    <button class="tab-btn" onclick="switchTab('exam')">🎯 시험</button>
+  </div>
+
+  <!-- [탭 1] ⚡ 스피드 퀴즈 -->
+  <div id="speed-view" class="view-card active">
+    <div id="speed-play-box">
+      <div class="info-banner-40">💡 20단어에 대해 한➔스(20개), 스➔한(20개) 총 40문제가 제공됩니다.</div>
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div id="speed-pbar" class="progress-bar-fill"></div></div>
+        <span id="speed-ptext" class="progress-count">1/40</span>
+      </div>
+
+      <div class="question-box">
+        <span class="question-badge" id="speed-badge">스피드 퀴즈</span>
+        <div id="speed-prompt-word" class="question-word">단어</div>
+        <div id="speed-tts-wrap" style="display: none;"><button class="tts-btn" id="speed-tts-btn">🔊 발음 듣기 <span class="key-hint-pill">0</span></button></div>
+
+        <div class="card-tools-bar">
+          <button class="card-tool-btn btn-prev-tool" onclick="prevSpeedQuestion()">◀ 이전 <span class="key-hint-pill">8</span></button>
+          <button class="card-tool-btn" onclick="toggleCardPanel('speed', 'etym')">🔍 어원 <span class="key-hint-pill">E</span></button>
+          <button class="card-tool-btn" onclick="toggleCardPanel('speed', 'mnemo')">🧠 연상법 <span class="key-hint-pill">M</span></button>
+          <button class="card-tool-btn btn-ans-tool" onclick="toggleCardPanel('speed', 'ans')">💡 정답확인 <span class="key-hint-pill">H</span></button>
+        </div>
+        <div id="speed-etym-panel" class="card-inline-panel etym-panel"></div>
+        <div id="speed-mnemo-panel" class="card-inline-panel mnemo-panel"></div>
+        <div id="speed-ans-panel" class="card-inline-panel ans-panel"></div>
+      </div>
+
+      <div id="speed-choices" class="choices-grid"></div>
+      <div id="speed-feedback" class="feedback-banner"></div>
+
+      <!-- 보너스 철자 테스트 상자 (편법 방지로 정답 스페인어 가림막 작동) -->
+      <div id="speed-spelling-bonus-wrap" class="speed-bonus-spelling-box" style="display: none;">
+        <div class="speed-bonus-header">
+          <span class="speed-bonus-title">✍️ 보너스 철자 테스트 (가려진 스페인어 쓰기)</span>
+          <span class="speed-bonus-skip-tip">안 쓰고 바로 다음 버튼 눌러도 OK!</span>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <input type="text" id="speed-bonus-input" class="input-box" style="padding: 10px; font-size: 1.05rem;" placeholder="스페인어 철자 입력 (1~7로 띨데 입력)" autocomplete="off" autocapitalize="none">
+          <button class="btn-main" style="width: auto; padding: 0 16px; font-size: 0.88rem; white-space: nowrap;" onclick="checkSpeedBonusSpelling()">확인</button>
+        </div>
+        <div class="tilde-toolbar" style="margin: 8px 0 0 0;">
+          <button class="tilde-btn" style="width:36px; height:36px; font-size:1rem;" onclick="insertTildeTo('speed-bonus-input','á')"><span class="tilde-num-badge">1</span>á</button>
+          <button class="tilde-btn" style="width:36px; height:36px; font-size:1rem;" onclick="insertTildeTo('speed-bonus-input','é')"><span class="tilde-num-badge">2</span>é</button>
+          <button class="tilde-btn" style="width:36px; height:36px; font-size:1rem;" onclick="insertTildeTo('speed-bonus-input','í')"><span class="tilde-num-badge">3</span>í</button>
+          <button class="tilde-btn" style="width:36px; height:36px; font-size:1rem;" onclick="insertTildeTo('speed-bonus-input','ó')"><span class="tilde-num-badge">4</span>ó</button>
+          <button class="tilde-btn" style="width:36px; height:36px; font-size:1rem;" onclick="insertTildeTo('speed-bonus-input','ú')"><span class="tilde-num-badge">5</span>ú</button>
+          <button class="tilde-btn" style="width:36px; height:36px; font-size:1rem;" onclick="insertTildeTo('speed-bonus-input','ñ')"><span class="tilde-num-badge">6</span>ñ</button>
+          <button class="tilde-btn" style="width:36px; height:36px; font-size:1rem;" onclick="insertTildeTo('speed-bonus-input','/')"><span class="tilde-num-badge">7</span>/</button>
+        </div>
+        <div id="speed-bonus-feedback" style="display: none; margin-top: 8px; font-size: 0.85rem; font-weight: 800; text-align: center;"></div>
+      </div>
+      
+      <div id="speed-action-group" class="action-btn-group" style="display: none;">
+        <button class="btn-retry" onclick="retryCurrentSpeed()"><span class="retry-key-badge">9</span>🔄 다시 풀기</button>
+        <button id="speed-next-btn" class="btn-next-action" onclick="nextSpeedQuestion()">다음 문제 ➔ (Enter)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- [탭 2] ✍️ 철자 연습 -->
+  <div id="write-view" class="view-card">
+    <div id="write-play-box">
+      <div class="info-banner-40">💡 20단어에 대해 한➔스(20개), 스➔한(20개) 총 40문제가 제공됩니다.</div>
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div id="write-pbar" class="progress-bar-fill"></div></div>
+        <span id="write-ptext" class="progress-count">1/40</span>
+      </div>
+
+      <div class="question-box">
+        <span class="question-badge" id="write-badge">철자 쓰기</span>
+        <div id="write-prompt-word" class="question-word">단어</div>
+        <div id="write-tts-wrap" style="display: none;"><button class="tts-btn" id="write-tts-btn">🔊 발음 듣기 <span class="key-hint-pill">0</span></button></div>
+
+        <div class="card-tools-bar">
+          <button class="card-tool-btn btn-prev-tool" onclick="prevWriteQuestion()">◀ 이전 <span class="key-hint-pill">8</span></button>
+          <button class="card-tool-btn" onclick="toggleCardPanel('write', 'etym')">🔍 어원 <span class="key-hint-pill">E</span></button>
+          <button class="card-tool-btn" onclick="toggleCardPanel('write', 'mnemo')">🧠 연상법 <span class="key-hint-pill">M</span></button>
+          <button class="card-tool-btn btn-ans-tool" onclick="toggleCardPanel('write', 'ans')">💡 정답확인 <span class="key-hint-pill">H</span></button>
+        </div>
+        <div id="write-etym-panel" class="card-inline-panel etym-panel"></div>
+        <div id="write-mnemo-panel" class="card-inline-panel mnemo-panel"></div>
+        <div id="write-ans-panel" class="card-inline-panel ans-panel"></div>
+      </div>
+
+      <input type="text" id="write-input" class="input-box" placeholder="답안 입력" autocomplete="off" autocapitalize="none" />
+      
+      <div id="write-tilde-bar" class="tilde-toolbar">
+        <button class="tilde-btn" onclick="insertTildeTo('write-input','á')"><span class="tilde-num-badge">1</span>á</button>
+        <button class="tilde-btn" onclick="insertTildeTo('write-input','é')"><span class="tilde-num-badge">2</span>é</button>
+        <button class="tilde-btn" onclick="insertTildeTo('write-input','í')"><span class="tilde-num-badge">3</span>í</button>
+        <button class="tilde-btn" onclick="insertTildeTo('write-input','ó')"><span class="tilde-num-badge">4</span>ó</button>
+        <button class="tilde-btn" onclick="insertTildeTo('write-input','ú')"><span class="tilde-num-badge">5</span>ú</button>
+        <button class="tilde-btn" onclick="insertTildeTo('write-input','ñ')"><span class="tilde-num-badge">6</span>ñ</button>
+        <button class="tilde-btn" onclick="insertTildeTo('write-input','/')"><span class="tilde-num-badge">7</span>/</button>
+      </div>
+
+      <div id="write-init-btn-wrap">
+        <button id="write-action-btn" class="btn-main" onclick="handleWriteAction()">정답 확인 (Enter)</button>
+      </div>
+      <div id="write-feedback" class="feedback-banner"></div>
+
+      <div id="write-action-group" class="action-btn-group" style="display: none; margin-top: 10px;">
+        <button class="btn-retry" onclick="retryCurrentWrite()"><span class="retry-key-badge">9</span>🔄 다시 풀기</button>
+        <button id="write-next-btn" class="btn-next-action" onclick="nextWriteQuestion()">다음 단어 ➔ (Enter)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- [탭 3] 📋 단어장 -->
+  <div id="list-view" class="view-card">
+    <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+      <span id="list-round-title" style="font-size: 0.85rem; font-weight: 700; color: var(--text-sub);">단어 목록</span>
+      <span style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">🔊 남미/에콰도르 발음</span>
+    </div>
+
+    <div class="vocab-mask-header">
+      <button id="btn-mask-es" class="mask-header-btn" onclick="toggleMaskAll('es')">🙈 스페인어 가리기</button>
+      <button id="btn-mask-ko" class="mask-header-btn" onclick="toggleMaskAll('ko')">🙈 한국어 가리기</button>
+    </div>
+
+    <div id="vocab-list-container" class="vocab-list"></div>
+  </div>
+
+  <!-- [탭 4] 📁 집중공부 -->
+  <div id="focus-view" class="view-card">
+    <div class="focus-folder-header">
+      <div>
+        <span style="font-size: 0.95rem; font-weight: 800; color: #0f172a;">📁 내 집중공부 단어장</span>
+        <span id="focus-count-badge" style="font-size: 0.8rem; font-weight: 700; color: var(--primary); margin-left: 4px;">(0개)</span>
+      </div>
+      <button class="btn-clear-focus" onclick="clearAllFocusWords()">전체 비우기</button>
+    </div>
+    
+    <div class="vocab-mask-header">
+      <button id="btn-mask-focus-es" class="mask-header-btn" onclick="toggleFocusMaskAll('es')">🙈 스페인어 가리기</button>
+      <button id="btn-mask-focus-ko" class="mask-header-btn" onclick="toggleFocusMaskAll('ko')">🙈 한국어 가리기</button>
+    </div>
+
+    <div id="focus-list-container" class="vocab-list"></div>
+  </div>
+
+  <!-- [탭 5] 🎯 누적 실전 시험 (편법 방지: 시험 중 힌트/재시험/이전단어 차단) -->
+  <div id="exam-view" class="view-card">
+    <div id="exam-intro-screen" class="exam-start-box">
+      <div style="font-size: 2.2rem; margin-bottom: 6px;">🎯</div>
+      <h2 id="exam-intro-title" style="font-size: 1.25rem; font-weight: 800; color: #0f172a;">실전 시험</h2>
+      <p style="font-size: 0.82rem; color: var(--text-sub); margin-top: 4px;">80점 이상 달성 시 퇴근 가능! (시험 중 힌트·다시풀기 불가)</p>
+      <div class="exam-rule-card" id="exam-rule-desc"></div>
+      <button class="btn-main" onclick="startExamSession()">시험 시작하기 ➔</button>
+    </div>
+
+    <div id="exam-playing-screen" style="display: none;">
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div id="exam-pbar" class="progress-bar-fill"></div></div>
+        <span id="exam-ptext" class="progress-count">1/20</span>
+      </div>
+      <div class="question-box">
+        <span id="exam-q-badge" class="question-badge">파트 1</span>
+        <div id="exam-q-prompt" class="question-word">단어</div>
+        <div id="exam-tts-wrap" style="display: none;"><button class="tts-btn" id="exam-audio-btn">🔊 발음 듣기 <span class="key-hint-pill">0</span></button></div>
+      </div>
+
+      <div id="exam-type-spelling-area" style="display: none;">
+        <input type="text" id="exam-input" class="input-box" placeholder="답안 입력" autocomplete="off" autocapitalize="none" />
+        <div id="exam-tilde-bar" class="tilde-toolbar">
+          <button class="tilde-btn" onclick="insertTildeTo('exam-input','á')"><span class="tilde-num-badge">1</span>á</button>
+          <button class="tilde-btn" onclick="insertTildeTo('exam-input','é')"><span class="tilde-num-badge">2</span>é</button>
+          <button class="tilde-btn" onclick="insertTildeTo('exam-input','í')"><span class="tilde-num-badge">3</span>í</button>
+          <button class="tilde-btn" onclick="insertTildeTo('exam-input','ó')"><span class="tilde-num-badge">4</span>ó</button>
+          <button class="tilde-btn" onclick="insertTildeTo('exam-input','ú')"><span class="tilde-num-badge">5</span>ú</button>
+          <button class="tilde-btn" onclick="insertTildeTo('exam-input','ñ')"><span class="tilde-num-badge">6</span>ñ</button>
+          <button class="tilde-btn" onclick="insertTildeTo('exam-input','/')"><span class="tilde-num-badge">7</span>/</button>
+        </div>
+        <button id="exam-submit-btn" class="btn-main" onclick="submitExamSpelling()">답안 제출 (Enter)</button>
+      </div>
+
+      <div id="exam-type-choice-area" style="display: none;">
+        <div id="exam-choices-container" class="choices-grid"></div>
+      </div>
+      
+      <div id="exam-feedback-banner" class="feedback-banner"></div>
+
+      <div id="exam-action-group" class="action-btn-group" style="display: none; margin-top: 10px;">
+        <button id="exam-next-btn" class="btn-main" onclick="nextExamQuestion()">다음 문제 ➔ (Enter)</button>
+      </div>
+    </div>
+
+    <!-- 시험 최종 결과 화면 (80점 이상 퇴근 가능 / 75점 이하 퇴근 불가) -->
+    <div id="exam-result-screen" style="display: none; text-align: center;">
+      <div class="exam-score-card">
+        <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-sub);">최종 점수</p>
+        <div id="exam-final-score-val" class="exam-total-score">90점</div>
+        <div id="exam-score-grade" style="margin-bottom: 12px;"></div>
+        <div class="score-breakdown-box">
+          <div class="score-sub-badge"><span style="color:var(--text-sub);">누적 복습 (10문항)</span><b id="exam-score-review">50 / 50점</b></div>
+          <div class="score-sub-badge"><span style="color:var(--text-sub);">금회차 본시험 (10문항)</span><b id="exam-score-current">40 / 50점</b></div>
+        </div>
+      </div>
+      <div style="text-align: left; margin-bottom: 6px;"><span style="font-size: 0.85rem; font-weight: 800; color: #0f172a;">📝 오답 복습 노트 (체크 시 집중공부로 이동)</span></div>
+      <div id="exam-wrong-container" class="wrong-review-list"></div>
+      <button class="btn-main" onclick="resetExamIntro()">다시 응시하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 단축키 모달 창 -->
+<div id="shortcut-modal" class="modal-backdrop" onclick="if(event.target===this) closeShortcutModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>⌨️ 키보드 단축키 안내</h3>
+      <button class="modal-close-btn" onclick="closeShortcutModal()">✕</button>
+    </div>
+    <table class="shortcut-table">
+      <thead>
+        <tr><th style="width: 32%;">단축키</th><th>기능 설명</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="key-badge">1</span> ~ <span class="key-badge">7</span></td><td><b>철자 입력 중:</b> á, é, í, ó, ú, ñ, / 자동 입력</td></tr>
+        <tr><td><span class="key-badge">1</span> ~ <span class="key-badge">4</span></td><td><b>스피드/시험 객관식:</b> 1번~4번 보기 선택</td></tr>
+        <tr><td><span class="key-badge">Enter</span></td><td><b>정답 확인 / 채점 ➔ 다음 문제 진행</b></td></tr>
+        <tr><td><span class="key-badge">8</span></td><td><b>◀ 직전 단어로 넘어가기 (스피드/철자 모드)</b></td></tr>
+        <tr><td><span class="key-badge">9</span></td><td><b>🔄 다시 풀기 (스피드/철자 모드 즉시 리셋)</b></td></tr>
+        <tr><td><span class="key-badge">H</span></td><td><b>💡 정답확인 (제출 전 정답 미리보기)</b></td></tr>
+        <tr><td><span class="key-badge">0</span></td><td>🔊 원어민 발음 듣기 (TTS)</td></tr>
+        <tr><td><span class="key-badge">E</span></td><td>🔍 심층 어원 분석 열기/닫기</td></tr>
+        <tr><td><span class="key-badge">M</span></td><td>🧠 해마학습법 발음 연상 열기 / 세트 전환</td></tr>
+        <tr><td><span class="key-badge">C</span></td><td>☑️ 집중공부 폴더 체크/해제</td></tr>
+        <tr><td><span class="key-badge">[</span> / <span class="key-badge">]</span></td><td>이전 회차(◀) / 다음 회차(▶) 이동</td></tr>
+        <tr><td><span class="key-badge">Esc</span></td><td>모달 창 닫기</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top: 14px; text-align: center;">
+      <button class="btn-main" style="padding: 10px;" onclick="closeShortcutModal()">닫기 (Esc)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ================= [1~30회차 전체 600단어 마스터 데이터] =================
+  const RAW_ROUNDS = {
+    1: [["médico/a","의사"],["glorioso/a","영광스러운"],["sacerdote","제사장, 사제"],["injusticia","부당함, 불의"],["consolación","위로, 위안"],["misericordia","자비, 연민"],["persecución","박해, 탄압"],["enfermo/a","아픈 사람, 환자 / 아픈"],["resurrección","부활"],["disciplina","훈육, 징계, 규율"],["profecía","예언"],["ortodoxia","정통, 정통성"],["proceso","과정, 절차"],["cumplimiento","성취, 이행"],["eterno/a","영원한"],["cuerpo","몸, 신체"],["obstaculizar","방해하다, 저지하다"],["testificar","증언하다, 입증하다"],["corazón","마음, 심장"],["transformar","변화시키다, 변형하다"]],
+    2: [["juicio","심판"],["estudiante","학생"],["salvación","구원"],["malvado/a","사악한"],["herejía","이단"],["líder","지도자, 리더"],["trampa","함정"],["tormenta","폭풍, 폭풍우"],["evangelizar","복음을 전하다, 전도하다"],["fianza","보석, 보석금"],["traidor/a","배신자"],["falso/a","거짓의, 가짜의"],["expulsado/a","추방된, 쫓겨난"],["alboroto","소란, 대소동"],["multitud","무리, 대중"],["recreación","재창조"],["humilde","겸손한, 비천한"],["enemigo/a","원수, 적"],["trabajo","일, 직업"],["paz","평화, 평안"]],
+    3: [["destrucción","파괴, 멸망"],["casa","집"],["venganza","복수, 보복"],["traidor/a","배신자"],["testigo","증인"],["carta","편지"],["castigo","형벌, 처벌"],["tribunal","법원, 재판소"],["oscuridad","어둠, 흑암"],["fiesta","파티, 축제"],["refugio","피난처, 피신처"],["petición","청원, 신청"],["multitud","무리, 대중"],["iglesia","교회"],["condición","조건"],["prueba","증거, 시험"],["orden","명령, 지시"],["pan","빵"],["reino","왕국, 나라"],["apocalipsis","계시, 요한계시록"]],
+    4: [["humildad","겸손"],["mansedumbre","온유, 온화함"],["paciencia","인내, 오래 참음"],["vínculo","매는 줄, 결속"],["gracia","은혜, 은총"],["medida","분량, 측정"],["don","선물, 은사"],["apóstol","사도"],["profeta","선지자, 예언자"],["evangelista","복음 전도자"],["pastor/a","목자, 목사"],["maestro/a","교사, 스승"],["edificación","덕을 세움, 건덕"],["estatura","분량, 키"],["plenitud","충만함, 완숙"],["astucia","간사함, 궤술"],["vanidad","허망함, 허영"],["ignorancia","무지, 알지 못함"],["dureza","완악함, 굳어짐"],["lascivia","방탕, 음란"]],
+    5: [["renovar","새롭게 하다, 쇄신하다"],["santidad","거룩함, 성결"],["prójimo","이웃, 동포"],["enojo","분노, 성냄"],["amargura","악독, 쓰라림"],["maledicencia","비방, 훼방"],["benigno/a","인자한, 자애로운"],["misericordioso/a","자비로운, 불쌍히 여기는"],["perdonar","용서하다"],["imitador/a","본받는 자, 모방자"],["ofrenda","예물, 헌금"],["sacrificio","희생, 제물"],["olor","향기, 냄새"],["fornicación","음행, 부정한 행위"],["inmundicia","더러움, 불결"],["avaricia","탐욕, 탐심"],["idolatría","우상 숭배"],["herencia","기업, 유업"],["luz","빛"],["tinieblas","어두움, 흑암"]],
+    6: [["bondad","선함, 착함"],["reprender","책망하다, 비판하다"],["secreto","은밀함, 비밀"],["sabio/a","지혜로운 사람"],["voluntad","뜻, 의지"],["disolución","방탕함, 무절제"],["salmo","시편, 찬미가"],["himno","찬송가, 찬미"],["cántico","신령한 노래, 찬가"],["alabar","찬양하다, 기리다"],["reverencia","경외, 공경"],["sujetarse","복종하다, 순종하다"],["cabeza","머리, 수장"],["mancha","티, 흠"],["arruga","주름, 결점"],["misterio","비밀, 신비"],["mandamiento","계명, 계율"],["armadura","전신갑주, 갑옷"],["asechanzas","궤계, 간계"],["lucha","싸움, 전쟁"]],
+    7: [["sangre","피, 혈통"],["carne","육체, 고기"],["principado","정사, 통치권"],["potestad","권세, 권능"],["gobernadores","주관자들, 통치자들"],["huestes","영들, 군대"],["cinturón","허리띠, 벨트"],["coraza","흉배, 갑옷 가슴받이"],["calzado","신발, 복음의 신"],["escudo","방패"],["yelmo","투구"],["espada","검, 칼"],["oración","기도, 문장"],["suplicar","간구하다, 애원하다"],["embajador/a","사신, 대언자"],["cadenas","쇠사슬, 결박"],["comunión","교제, 친교"],["afecto","애정, 긍휼"],["contienda","다툼, 분쟁"],["vanagloria","허영, 자랑"]],
+    8: [["siervo/a","종, 하인"],["obediencia","복종, 순종"],["cruz","십자가"],["exaltar","높이이다, 영광스럽게 하다"],["rodilla","무릎"],["lengua","방언, 혀, 언어"],["confesar","고백하다, 시인하다"],["temblor","떨림"],["murmuración","원망, 불평"],["irreprensible","흠 없는, 나무랄 데 없는"],["luminar","빛, 광명체"],["libación","관제, 제물 전제"],["riquezas","부요함, 보화"],["entendimiento","이해, 총명"],["tesoros","보물, 보화"],["sabiduría","지혜"],["conocimiento","지식, 깨달음"],["tradición","전통, 유전"],["filosofía","철학"],["sutileza","속임수, 교묘함"]],
+    9: [["circuncisión","할례"],["incircuncisión","무할례"],["bautismo","세례, 침례"],["sepultado/a","장사된, 매장된"],["decreto","증서, 칙령"],["sombra","그림자"],["pasiones","정욕, 열정"],["deseos","욕심, 소원"],["rencor","원한, 원망"],["blasfemia","신성모독, 훼방"],["renovación","새롭게 함, 쇄신"],["benignidad","자비, 온유"],["perdón","용서, 사유"],["marido","남편"],["mujer","아내, 여성"],["padres","부모"],["hijo/a","자녀, 아들/딸"],["amo/a","상전, 주인"],["azotes","매질, 채찍질"],["cárcel","감옥, 옥"]],
+    10: [["milagro","이적, 기적"],["señal","표적, 징조"],["cojo/a","앉은뱅이, 절름발이"],["eunuco","내시, 환관"],["visión","환상, 비전"],["terremoto","지진"],["carcelero","간수"],["magistrados","상관들, 재판관들"],["ciudadano/a","시민"],["traición","반역, 배반"],["edicto","칙령, 포고"],["imperio","제국"],["libre","자유로운"],["libertad","자유"],["anfiteatro","원형경기장"],["toro","황소, 소"],["guirnalda","화환, 꽃다발"],["convicción","확신, 확고한 믿음"],["naufragio","파선, 배의 침몰"],["cepo","착고, 족쇄"]],
+    11: [["antorcha","횃불"],["mártir","순교자"],["martirio","순교"],["plomo","납"],["tabernáculo","장막"],["templo","성전"],["vasija","그릇, 대접"],["plaga","재앙, 전염병"],["mar","바다"],["vidrio","유리"],["fuego","불"],["lámpara","등불, 등대"],["trono","보좌, 왕좌"],["vencedor/a","이긴자, 승리자"],["bestia","짐승, 괴수"],["imagen","우상, 형상"],["marca","표, 인"],["número","수, 숫자"],["arpa","거문고, 수금"],["serpiente","뱀, 마귀"]],
+    12: [["realidad","실체, 실상"],["semilla","씨, 종자"],["levadura","누룩, 효모"],["cosecha","추수, 수확"],["cosechador/a","추수꾼, 수확자"],["hoz","낫"],["granero","곳간, 창고"],["trigo","밀, 알곡"],["cebada","보리"],["cizaña","가라지, 독보리"],["monte","산"],["primicias","처음 익은 열매"],["libro","책, 서책"],["rollo","두루마리"],["sellado/a","인 맞은, 봉인된"],["sello","인, 도장"],["tribu","지파, 부족"],["vestiduras","옷, 두루마기"],["blanco/a","흰색의, 깨끗한"],["cordero","어린양"]],
+    13: [["fuente","샘, 근원"],["llanto","애통, 울음"],["lágrima","눈물"],["muerte","사망, 죽음"],["dolor","아픔, 통증"],["ciudad","성, 도시"],["cónyuge","배우자"],["banquete","잔치, 연회"],["ramera","음녀, 창녀"],["ruina","무너짐, 멸망"],["foso","무저갱, 구덩이"],["azufre","유황"],["trompeta","나팔"],["trueno","뇌성, 우레"],["voz","음성, 목소리"],["relámpago","번개"],["cielo","하늘"],["tierra","땅, 육지"],["sol","해, 태양"],["luna","달"]],
+    14: [["estrella","별"],["abismo","무저갱, 깊은 구렁"],["hereje","이단자"],["examen","시험, 검토"],["público/a","공개적인, 대중의"],["portavoz","대언자, 대변인"],["consolador","보혜사, 위로자"],["pacto","언약, 계약"],["ley","법, 율법"],["transgresión","죄, 허물"],["reconciliación","화목, 화해"],["bendición","복, 축복"],["desobediencia","불순종"],["apostasía","배도, 배교"],["apóstata","배도자"],["destrucción","멸망, 파괴"],["destruir","멸망시키다, 파괴하다"],["salvador/a","구원자"],["regla","규칙, 규범"],["hábito","습관"]],
+    15: [["pereza","나태, 게으름"],["perezoso/a","게으른, 나태한"],["fuerza","힘, 능력"],["verdad","진리, 참"],["vencer","이기다, 승리하다"],["diezmo","십일조"],["culto","예배"],["adoración","경배, 찬양"],["alabanza","찬양, 송축"],["ayuno","금식"],["pureza","정결, 순결"],["matrimonio","결혼, 혼인"],["voto","서약, 맹세"],["divorcio","이혼"],["fidelidad","신실함, 정조"],["fiel","신실한, 충성된"],["amor","사랑"],["esperanza","소망, 희망"],["fe","믿음, 신앙"],["fruto","열매, 과실"]],
+    16: [["perseverancia","견딤, 지속함"],["corona","면류관, 왕관"],["maná","만나"],["piedrecita","돌, 흰 돌"],["vara","지팡이, 철장"],["hierro","철, 쇠"],["columna","기둥"],["recompensa","상, 보상"],["jinete","탄 자, 말 탄 자"],["caballo","말"],["humo","연기"],["doctrina","교리, 가르침"],["materia","재료, 물질"],["discípulo/a","제자"],["misión","사명, 임무"],["obrero/a","일꾼, 사명자"],["soldado","군사, 군인"],["árbol","나무"],["hoja","잎사귀"],["medicina","약, 치료"]],
+    17: [["curación","치유, 고침"],["alimento","양식, 음식"],["leche","젖, 도의 초보"],["maduro/a","장성한, 익은"],["fundamento","터, 기초"],["roca","반석"],["construcción","건축, 세움"],["edificio","건물, 성전"],["morada","처소, 거할 곳"],["espíritu","영, 성령"],["ángel","천사, 사자"],["diablo","마귀"],["satanás","사단"],["demonio","귀신, 악령"],["mentiroso/a","거짓말쟁이"],["homicida","살인자"],["engañador/a","미혹하는 자"],["lobo","이리, 늑대"],["oveja","양"],["cabrito","염소"]],
+    18: [["rebaño","양 떼"],["oro","금"],["plata","은"],["madera","나무, 목재"],["heno","풀, 풀밭"],["hojarasca","짚, 짚더미"],["horno","풀무불, 용광로"],["lago","못, 호수"],["muro","성곽"],["puerta","성문, 문"],["perla","진주"],["plaza","길, 정원"],["cristal","수정"],["río","강, 시냇물"],["mes","달, 월"],["salud","건강"],["enfermedad","병, 질병"],["población","백성, 주민"],["nación","나라, 민족"],["rey","왕"]],
+    19: [["sacerdocio","제사장 직분"],["alegría","환희, 기쁨"],["gratitud","감사"],["agradecimiento","감사함"],["gloria","영광"],["honra","존귀, 명예"],["dominio","주권, 통치"],["riqueza","부, 부유함"],["fortaleza","요새, 힘"],["amén","아멘"],["aleluya","할렐루야"],["creador","창조주"],["padre","아버지"],["epístola","서신, 편지"],["testamento","언약, 약속"],["velo","휘장"],["altar","제단"],["incienso","향, 분향"],["viento","바람"],["frente","이마"]],
+    20: [["palmas","종려 가지"],["ancianos","장로들"],["arcángel","천사장"],["diadema","면류관"],["cuidado","돌봄, 양육"],["acusador","참소하던 자"],["creación","창조"],["restauración","회복"],["consumación","완성, 끝"],["sentencia","판결, 판정"],["veredicto","판결"],["promesa","약속"],["cumplir","이행하다, 성취하다"],["guardar","지키다, 수호하다"],["denunciar","고발하다, 폭로하다"],["proclamar","선포하다"],["obrar","일하다, 역사하다"],["guiar","인도하다"],["proteger","보호하다"],["recompensar","보상하다, 상주다"]],
+    21: [["confiar","신뢰하다, 의지하다"],["soportar","견디다, 참다"],["luchar","싸우다, 투쟁하다"],["vencer","이기다"],["resplandecer","빛나다"],["iluminar","비추다"],["limpiar","깨끗하게 하다"],["purificar","정결하게 하다"],["santificar","거룩하게 하다"],["revelar","나타내다, 계시하다"],["enseñar","가르치다"],["aprender","배우다"],["anunciar","알리다, 선포하다"],["publicar","공포하다"],["servir","섬기다, 봉사하다"],["adorar","경배하다"],["alabar","찬양하다"],["rogar","간구하다"],["velar","깨어 있다"],["permanecer","머물다, 거하다"]],
+    22: [["habitar","거주하다"],["reunir","모으다, 집합하다"],["unir","하나 되다, 결합하다"],["separar","구별하다, 나누다"],["juzgar","심판하다, 재판하다"],["condenar","단죄하다, 처벌하다"],["salvar","구원하다"],["redimir","구속하다, 구속함을 얻다"],["liberar","해방하다, 석방하다"],["librar","구출하다"],["avanzar","전진하다"],["retroceder","후퇴하다"],["asegurar","확신하다"],["ser testigo","증인되다"],["acompañar","동행하다"],["invitar","초청하다"],["dirigir","인도하다"],["sanar","치유하다"],["restaurar","회복하다"],["agradecer","감사하다"]],
+    23: [["gozar","기뻐하다"],["alegrarse","즐거워하다"],["lamentar","애통하다"],["entristecerse","슬퍼하다"],["temer","두려워하다"],["avergonzarse","부끄러워하다"],["gloriarse","자랑하다"],["arrepentirse","뉘우치다"],["confesar","고백하다"],["jurar","맹세하다"],["prometer","서약하다"],["recordar","기억하다"],["olvidar","잊다"],["meditar","묵상하다"],["reflexionar","성찰하다"],["discernir","분별하다"],["comprender","깨닫다"],["creer","믿다"],["esperar","소망하다"],["amar","사랑하다"]],
+    24: [["ser fiel","충성하다"],["obedecer","순종하다"],["someterse","굴복하다"],["someter","굴복시키다"],["triunfar","승리하다"],["dominar","지배하다"],["gobernar","통치하다"],["reinar","다스리다"],["cumplir","지키다"],["preservar","보존하다"],["ser santo","거룩하다"],["ser justo","의롭다"],["ser verdadero","참되다"],["ser fiel","신실하다"],["ser bueno","선하다"],["ser manso","온유하다"],["ser humilde","겸손하다"],["ser misericordioso","자비롭다"],["ser benigno","인자하다"],["ser valioso","소중하다"]],
+    25: [["ser precioso","귀하다"],["santa ciudad","거룩한 성"],["nueva jerusalén","새 예루살렘"],["fuente de agua de vida","생명수 샘"],["fruto del árbol de la vida","생명나무 열매"],["esposa del cordero","어린양의 신부"],["trono de dios","하나님의 보좌"],["orilla del mar de vidrio","유리바다 가"],["plaga de las copas de oro","금 대접 재앙"],["siete trompetas","일곱 나팔"],["siete sellos","일곱 인"],["doce puertas","열두 문"],["doce cimientos","열두 기초석"],["calle de oro puro","정금 길"],["río como el cristal","수정 같은 강"],["nuevo cielo y nueva tierra","새 하늘 새 땅"],["templo del tabernáculo del testimonio","증거장막성전"],["evangelio eterno","영원한 복음"],["cántico nuevo","새 노래"],["primera resurrección","첫째 부활"]],
+    26: [["vida eterna y gozo","영생 복락"],["pueblo del cielo","천국 백성"],["semilla de dios","하나님의 씨"],["cosechador","추수꾼"],["sellado","인 맞은 자"],["líderes de las doce tribus","12지파장"],["persona con una misión","사명자"],["líder de celula","구역장"],["maestro","교사"],["evangelizador","전도자"],["administrador","청지기"],["soldado","군사"],["obrero","일꾼"],["centinela","파수꾼"],["testigo","증인"],["portavoz","대언자"],["vencedor","이긴자"],["pastor prometido","약속의 목자"],["verdadero creyente","참 신앙인"],["santo, creyente","성도"]],
+    27: [["culto, adoración","예배"],["oración","기도"],["alabanza","찬양"],["acción de gracias","감사"],["ofrenda","헌금"],["diezmo","십일조"],["servicio","봉사"],["evangelización","전도"],["educación","교육"],["entrenamiento","훈련"],["cuidado, crianza","양육"],["comunión","교제"],["unidad","연합"],["paz","화평"],["amor","사랑"],["sacrificio","희생"],["fidelidad","충성"],["obediencia","순종"],["paciencia","인내"],["arrepentimiento","회개"]],
+    28: [["redención","구속"],["perdón de pecados","죄 사함"],["justificación","칭의"],["santificación","성화"],["glorificación","영화"],["salvación","구원"],["vida eterna","영생"],["resurrección","부활"],["esperanza","소망"],["fe","믿음"],["gracia","은혜"],["verdad","진리"],["revelación","계시"],["realidad cumplida","실상"],["profecía","예언"],["cumplimiento","성취"],["promesa","약속"],["pacto","언약"],["evangelio","복음"],["palabra","말씀"]],
+    29: [["hijos de luz","빛의 자녀"],["fruto de la luz","빛의 열매"],["armadura completa","전신갑주"],["espada del espíritu","성령의 검"],["escudo de la fe","믿음의 방패"],["yelmo de la salvación","구원의 투구"],["coraza de justicia","의의 흉배"],["cinturón de la verdad","진리의 띠"],["calzado de la paz","평안의 신"],["templo de dios","하나님의 성전"],["templo del espíritu santo","성령의 전"],["cuerpo de cristo","그리스도의 몸"],["familia de dios","하나님의 가족"],["ciudadanos del cielo","천국 시민"],["corona de justicia","의의 면류관"],["corona de la vida","생명의 면류관"],["corona de gloria","영광의 면류관"],["obra de dios","하나님의 일"],["propósito de dios","하나님의 목적"],["gozo de dios","하나님의 기쁨"]],
+    30: [["reino eterno","영원한 왕국"],["alimento de vida eterna","영생의 양식"],["río de agua de vida","생명수 강"],["maná escondido","감추었던 만나"],["piedrecita blanca","흰 돌"],["vara de hierro","철장 권세"],["nuevo nombre","새 이름"],["nombre de dios","하나님의 이름"],["nombre de la nueva jerusalén","새 예루살렘의 이름"],["sentarse en el trono","보좌에 앉음"],["esperanza de vida eterna","영생의 소망"],["fe inquebrantable","불변의 믿음"],["lema de victoria","승리의 구호"],["ejército celestial","천군 천사"],["reino del mundo espiritual","영계 천국"],["reino en la tierra","육계 천국"],["unión de espíritu y cuerpo","신인합일"],["anuncio","공지, 광고"],["reunión","모임, 회의"],["asamblea","총회, 모임"]]
+  };
+
+  // ================= [심층 라틴어/그리스어 어원 백과사전 (ROOT_ETYM_DB)] =================
+  const ROOT_ETYM_DB = [
+    {
+      keys: ["médic", "medicin", "medit", "medid"],
+      root: "라틴어 medēri (치유하다, 신중히 헤아리다)",
+      comp: "med- (돌보다, 측량하다) + -ico/a (전문 행위자 및 형용사형 접미사)",
+      lit: "몸과 마음의 균형을 깊이 헤아려 온전하게 돌보는 사람",
+      cognates: [
+        "Medicina: 치유하는 기술과 약물 → 의학, 약",
+        "Meditar: 마음속으로 깊이 헤아리다 → 묵상하다, 명상하다",
+        "Medida: 헤아려 정한 기준치 → 분량, 척도, 측정",
+        "Remedio: 다시(re-) 치유하여 바로잡는 수단 → 치료제, 해결책",
+        "Inmediato: 중간에 헤아릴 틈이 없는 → 즉각적인"
+      ],
+      nuance: "단순히 병을 고치는 기술자가 아니라, 환자의 아픔과 상태를 신중하게 살피고 균형을 회복시키는 '전인적 치유자'라는 숭고한 어감을 가집니다."
+    },
+    {
+      keys: ["glori", "vanaglori"],
+      root: "라틴어 glōria (찬란한 명성, 신성한 광채)",
+      comp: "glori- (영광, 빛나는 명예) + -oso/a (풍부하게 가득 찬 상태)",
+      lit: "숨길 수 없는 위엄과 찬란한 광채로 가득 차 넘치는 상태",
+      cognates: [
+        "Gloria: 찬란한 명성과 위엄 → 영광",
+        "Glorificar: 영광스럽게 만들다(ficar) → 영화롭게 하다, 찬미하다",
+        "Glorificación: 영화롭게 하는 완성된 과정 → 영화(榮華)",
+        "Gloriarse: 스스로 영광을 돌리다 → 자랑하다, 긍지를 갖다",
+        "Vanagloria: 헛된(vana) 영광을 구함 → 허영, 자만"
+      ],
+      nuance: "세속적인 작은 성공이 아니라, 하늘의 위엄이나 역사적인 대승리처럼 보는 이들을 압도하는 '눈부신 영광과 숭고미'를 내포합니다."
+    },
+    {
+      keys: ["sacerd", "sacrif", "sagr", "sant"],
+      root: "라틴어 sacer / sanctus (신에게 바쳐진, 세속과 구별된 거룩함)",
+      comp: "sacer- (성스러운) + dote (dare: 바치다) / sant- + -idad (본질적 성품)",
+      lit: "세상의 더러움과 구별되어 신성한 제물을 공식적으로 봉헌하는 자/성품",
+      cognates: [
+        "Sacerdote: 거룩한 제물을 바치는 자 → 제사장, 사제",
+        "Sacrificio: 거룩하게(sacer) 만드는 행위(facere) → 희생, 제물",
+        "Santidad: 구별되어 흠이 없는 순결한 본질 → 거룩함, 성결",
+        "Santificar: 거룩한 상태로 변화시키다 → 성화하다, 거룩하게 하다",
+        "Sacerdocio: 제사장으로서 수행하는 거룩한 직무 → 제사장 직분"
+      ],
+      nuance: "일상적인 도덕적 선함을 넘어, 오직 거룩한 목적을 위해 '구별되어 봉헌된 절대적 순결함'과 직분의 엄숙한 책임을 강조합니다."
+    },
+    {
+      keys: ["just", "juic", "juzg", "juez", "injust"],
+      root: "라틴어 iūs / iūstus (법, 공의, 마땅히 지켜야 할 바른 도리)",
+      comp: "in- (부정) + iūs (법/공의) + dicere (선언하다) / -ticia (명사화)",
+      lit: "엄정한 법과 기준에 따라 옳고 그름을 판가름하여 공식 선언함",
+      cognates: [
+        "Justicia: 법과 도리에 부합하는 바른 상태 → 정의, 공의",
+        "Injusticia: 공의(justicia)가 무너진(in-) 상태 → 불의, 부당함",
+        "Juicio: 법(ius)을 입으로 선언함(dicere) → 심판, 재판, 분별력",
+        "Juzgar: 법적 기준으로 옳고 그름을 가리다 → 심판하다, 재판하다",
+        "Justificación: 의롭게(justo) 만들어(ficar) 세움 → 칭의, 정당화"
+      ],
+      nuance: "단순한 개인적 판단이 아니라, 절대적인 규범과 공의에 비추어 내리는 '공식적이고 권위 있는 판결'을 뜻합니다. 콜롬비아·에콰도르에서는 juicioso가 '성실하고 분별력 있는'이라는 뜻으로 매일 쓰입니다."
+    },
+    {
+      keys: ["consol", "solaz"],
+      root: "라틴어 cōnsōlārī (함께 아파하며 슬픔을 부드럽게 달래다)",
+      comp: "con- (함께, 완전히) + sōlārī (고통을 덜어주다, 달래다) + -ción / -dor",
+      lit: "고통받는 이의 곁에 함께 머물며 깊은 상처와 슬픔을 어루만져 달래줌",
+      cognates: [
+        "Consolación: 함께 아픔을 나누어 달래주는 행위 → 위로, 위안",
+        "Consolador: 곁에서 위로하고 변호해 주는 주체 → 보혜사, 위로자",
+        "Consolar: 슬픔에 빠진 마음을 따뜻하게 달래다 → 위로하다",
+        "Consuelo: 슬픔을 덜어주는 마음의 안식 → 위안, 기쁨",
+        "Desconsuelo: 위로받을 길이 없는 상태 → 비통함, 절망"
+      ],
+      nuance: "피상적으로 건네는 인사말이 아니라, 절망에 빠진 사람의 내면 깊은 곳까지 찾아가 슬픔을 근원적으로 치유하고 새 힘을 북돋아 주는 '따뜻하고 인격적인 동행'의 뉘앙스를 담고 있습니다."
+    },
+    {
+      keys: ["misericord", "coraz", "cord", "record"],
+      root: "라틴어 cor / cordis (심장, 마음의 중심, 영혼의 좌소)",
+      comp: "miserēri (가엾게 여기다) + cor (심장/마음) / cor- + -azón (증대 접미사)",
+      lit: "비참하고 고통받는 이를 볼 때 자신의 심장이 함께 아파 견딜 수 없는 마음",
+      cognates: [
+        "Corazón: 생명의 고동이 치는 거대한 중심 → 마음, 심장",
+        "Misericordia: 불쌍한 자(miser)에게 심장(cor)을 내어줌 → 자비, 긍휼, 연민",
+        "Misericordioso: 자비로운 심장을 품은 → 자비로운, 불쌍히 여기는",
+        "Recordar: 다시(re-) 마음(cor)에 불러오다 → 기억하다, 회상하다",
+        "Concordia: 마음(cor)을 함께(con-) 하나로 맞춤 → 화합, 일치"
+      ],
+      nuance: "머리로만 이해하는 동정이 아니라, 타인의 고통에 내 심장(cor)이 공명하여 행동으로 구제하고 품어주는 '뜨겁고 애끓는 내면의 사랑'을 뜻합니다."
+    },
+    {
+      keys: ["persecu", "segu", "pros"],
+      root: "라틴어 sequī (뒤따르다, 끝까지 추적하다)",
+      comp: "per- (끝까지, 철저하게) + sequī (뒤쫓다) + -ción (동작의 결과)",
+      lit: "도망치거나 숨을 틈을 주지 않고 집요하게 끝까지 뒤쫓아 압박함",
+      cognates: [
+        "Persecución: 끝까지(per-) 뒤쫓아(sequi) 괴롭힘 → 박해, 탄압",
+        "Perseguir: 집요하게 추적하고 핍박하다 → 박해하다, 추격하다",
+        "Seguir: 발자취를 따라 계속 나아가다 → 따르다, 계속하다",
+        "Conseguir: 함께 끝까지 쫓아가 얻어내다 → 달성하다, 획득하다",
+        "Secuencia: 뒤따라 이어지는 질서 → 순서, 연속"
+      ],
+      nuance: "우발적인 괴롭힘이 아니라, 특정 신념이나 공동체를 무너뜨리기 위해 조직적이고 지속적으로 가하는 '가혹한 시련과 압박'의 어감을 지닙니다."
+    },
+    {
+      keys: ["enferm", "firm", "afirm"],
+      root: "라틴어 firmus (흔들림 없이 단단한, 견고한, 강건한)",
+      comp: "en- (in-: 부정 접두사 '~아닌') + ferm (firmus: 단단하고 건강한)",
+      lit: "본래 단단하고 강건했던 생명력이 무너져 연약하고 불안정해진 상태",
+      cognates: [
+        "Enfermo: 강건함(firme)을 잃어버린(in-) → 아픈, 환자",
+        "Enfermedad: 신체의 견고함이 무너진 상태 → 질병, 병",
+        "Firme: 흔들리지 않고 튼튼한 → 확고한, 견고한",
+        "Confirmar: 함께(con-) 완전히 굳건하게 하다 → 확정하다, 확인하다",
+        "Afirmar: 단단한 기반 위에 세워 말하다 → 단언하다, 확언하다"
+      ],
+      nuance: "단순한 통증을 넘어, 몸이나 영혼의 기둥(firme)이 약해져 누군가의 돌봄과 치유가 절실히 필요한 '연약함'을 묘사합니다."
+    },
+    {
+      keys: ["resurrec", "surg"],
+      root: "라틴어 surgere (아래에서 위로 힘차게 솟아오르다, 일어서다)",
+      comp: "re- (다시, 거듭) + sub- (아래에서 위로) + regere (곧게 세우다) + -ción",
+      lit: "죽음과 무덤의 가장 깊은 아래에서 생명으로 다시 곧게 솟구쳐 일어남",
+      cognates: [
+        "Resurrección: 죽음을 깨고 다시(re-) 일어남(surgere) → 부활",
+        "Resucitar: 생명을 다시 일으켜 세우다 → 부활시키다, 소생하다",
+        "Surgir: 어둠이나 수면 아래에서 솟아나다 → 나타나다, 솟아오르다",
+        "Insurgente: 기존 체제에 맞서 일어서는 → 반군의, 봉기한",
+        "Resurgir: 침체기를 딛고 다시 솟아오르다 → 재기하다, 부흥하다"
+      ],
+      nuance: "잠시 기절했다가 깨어나는 소생이 아니라, 죽음의 권세를 완전히 이기고 '이전과 전혀 다른 영광스럽고 불멸하는 생명체로 우뚝 일어서는 대역전'의 뉘앙스를 품고 있습니다."
+    },
+    {
+      keys: ["disciplin", "discípul", "discern"],
+      root: "라틴어 discere (배우다, 지식을 깨우치다) → discipulus (제자)",
+      comp: "discipul- (배우는 제자) + -ina (체계, 규범, 훈련 과정)",
+      lit: "참된 제자로 성장하기 위해 스승의 가르침 아래 몸과 마음을 다잡는 훈련",
+      cognates: [
+        "Disciplina: 제자(discípulo)가 지키는 훈련 규범 → 훈육, 징계, 규율",
+        "Discípulo: 스승의 도를 배우고 따르는 자 → 제자",
+        "Disciplinar: 규율과 가르침으로 바르게 잡아주다 → 훈육하다, 훈련시키다",
+        "Indisciplina: 배움의 규율이 무너진 상태 → 무질서, 문란함",
+        "Discernir: 배운 지혜로 명확히 갈라 구별하다 → 분별하다"
+      ],
+      nuance: "단순히 벌을 주는 체벌이 아니라, 제자(discípulo)가 바른 길에서 이탈하지 않고 성숙한 인격에 이르도록 돕는 '사랑에 기반한 교육적 훈육과 자기 절제'를 뜻합니다."
+    },
+    {
+      keys: ["profec", "profet", "profes", "blasfem", "confes"],
+      root: "그리스어 phanai / 라틴어 fārī (빛 가운데 드러내어 공언하다, 말하다)",
+      comp: "pro- (앞에 나서서, 미리, 대신하여) + pha- (선포하다) + -ía / -ta",
+      lit: "하늘의 뜻을 대신하여 대중 앞에서 미래와 진리를 당당히 선포함",
+      cognates: [
+        "Profecía: 앞서(pro-) 뜻을 받아 선포한 말씀 → 예언",
+        "Profeta: 대신하여 진리를 선포하는 대변자 → 선지자, 예언자",
+        "Confesar: 함께(con-) 입을 모아 사실을 말하다 → 고백하다, 시인하다",
+        "Blasfemia: 해롭고(blax) 불경한 말을 내뱉음 → 신성모독, 훼방",
+        "Profesar: 대중 앞에서 신념을 공개 선언하다 → 공언하다, 고백하다"
+      ],
+      nuance: "단순한 점술이나 미래 추측이 아니라, 위로부터 위임받은 권위를 가지고 시대를 향해 '반드시 이루어질 약속을 공적으로 선포한다'는 엄숙한 무게감을 지닙니다."
+    },
+    {
+      keys: ["ortodox", "doctrin"],
+      root: "그리스어 orthos (올바른, 곧은) + doxa (믿음, 견해, 영광) / 라틴어 docēre (가르치다)",
+      comp: "ortho- (바르고 곧은) + doxia (교리, 신념 체계)",
+      lit: "처음 세워진 기준에서 조금도 휘어지지 않은 바르고 순수한 정통 가르침",
+      cognates: [
+        "Ortodoxia: 바른(ortho) 믿음과 교리(doxa) → 정통, 정통성",
+        "Ortografía: 바르게(ortho) 글자를 적는(grafía) 법 → 맞춤법, 정서법",
+        "Paradoja: 일반 통념(doxa)을 넘어선(para-) 진리 → 역설, 패러독스",
+        "Doctrina: 스승이 체계적으로 가르친(docere) 핵심 → 교리, 가르침",
+        "Documento: 가르쳐 증명하는 공식 기록 → 문서, 증서"
+      ],
+      nuance: "타협이나 시류에 흔들리지 않고, 본래의 순수한 진리와 원칙을 원형 그대로 고수하는 '진리의 순결성과 권위'를 나타냅니다."
+    },
+    {
+      keys: ["proces", "proced", "retroced", "interced", "conced"],
+      root: "라틴어 cēdere (발걸음을 옮겨 가다, 나아가다, 물러서다)",
+      comp: "pro- (앞을 향하여) + cēdere (질서 있게 나아가다) → processus",
+      lit: "정해진 법칙과 목적을 따라 한 단계씩 멈추지 않고 앞으로 전진하는 흐름",
+      cognates: [
+        "Proceso: 앞으로(pro-) 나아가는(ceso) 일련의 단계 → 과정, 절차, 재판",
+        "Proceder: 원칙에 따라 앞으로 나아가다 → 진행하다, 착수하다",
+        "Retroceder: 뒤쪽(retro-)으로 물러서 가다 → 후퇴하다, 물러나다",
+        "Interceder: 두 사람 사이(inter-)로 들어가 가다 → 중재하다, 간구하다",
+        "Anteceder: 앞서(ante-) 먼저 가다 → 선행하다"
+      ],
+      nuance: "우연한 사건의 나열이 아니라, 최종적인 성취를 향해 '필연적이고 질서 정연하게 밟아 나가는 공식적 단계'라는 이성적·절차적 어감이 강합니다."
+    },
+    {
+      keys: ["cumpl", "plen", "complet", "supl"],
+      root: "라틴어 plēre / plēnus (빈틈없이 가득 채우다, 충만한)",
+      comp: "con- (완전히 강조) + plēre (가득 채우다) + -miento (결과/행위 명사화)",
+      lit: "비어 있던 약속의 그릇을 아구까지 꽉 채워 마침내 현실로 완성해 냄",
+      cognates: [
+        "Cumplimiento: 약속을 가득 채워 완수함 → 성취, 이행",
+        "Cumplir: 빈틈없이 채워 실행하다 → 성취하다, 이행하다, 지키다",
+        "Plenitud: 조금도 부족함 없이 꽉 찬 상태 → 충만함, 완숙",
+        "Completar: 전체를 온전히 다 채우다 → 완성하다",
+        "Suplir: 아래(sub-)에서 부족한 것을 채우다 → 보충하다, 채우다"
+      ],
+      nuance: "예언이나 약속이 그저 말로만 남지 않고, 때가 차서 눈앞의 실체(실상)로 100% 빈틈없이 채워져 이루어졌다는 '완전한 결실과 확증'의 희열을 담고 있습니다."
+    },
+    {
+      keys: ["etern", "edad"],
+      root: "라틴어 aeternus ← aevum (끝없이 이어지는 영겁의 시간, 생명력)",
+      comp: "aev- (시대, 영겁) + -ternus (지속적 상태를 나타내는 형용사 어미)",
+      lit: "시간의 시작과 끝이라는 한계를 초월하여 영원토록 변치 않는 상태",
+      cognates: [
+        "Eterno: 시간의 마모가 없는 → 영원한",
+        "Eternidad: 시작도 끝도 없는 영속의 세계 → 영원",
+        "Eternizar: 영원토록 지속되게 만들다 → 영구화하다",
+        "Coetáneo: 같은(co-) 시대(aevum)를 살아가는 → 동시대의",
+        "Longevo: 긴(longus) 세월(aevum)을 사는 → 장수하는"
+      ],
+      nuance: "단순히 시간이 오래 걸린다는 뜻이 아니라, 죽음이나 쇠퇴가 지배하지 못하는 '초월적이고 불멸하는 생명의 차원'을 가리킵니다."
+    },
+    {
+      keys: ["cuerp", "corpor", "carne"],
+      root: "라틴어 corpus (유기적 신체, 공동체) / caro, carnis (살, 육체)",
+      comp: "corpus → 모음 분화(o → ue)를 거쳐 스페인어 cuerpo로 정착",
+      lit: "여러 지체가 하나의 생명과 목적 아래 유기적으로 결합된 실체",
+      cognates: [
+        "Cuerpo: 영혼을 담는 그릇이자 유기적 공동체 → 몸, 신체",
+        "Carne: 피가 통하는 살과 육신 → 육체, 고기",
+        "Incorporar: 하나의 몸(cuerpo) 안(in-)으로 합치다 → 통합하다, 가입시키다",
+        "Corporación: 한 몸처럼 움직이는 법적 조직 → 법인, 단체",
+        "Encarnar: 육체(carne)를 입고 나타나다 → 성육신하다, 구현하다"
+      ],
+      nuance: "단순한 고깃덩어리(carne)와 달리, cuerpo는 머리의 지시를 받아 일사불란하게 움직이는 '질서 있고 조화로운 유기체(공동체)'라는 존귀한 어감을 가집니다."
+    },
+    {
+      keys: ["obstacul", "estatur", "estad", "establ", "restaur"],
+      root: "라틴어 stāre (굳건히 서다, 버티고 서 있다)",
+      comp: "ob- (맞서서, 앞을 가로막고) + stāre (서다) + -culum (장해물) + -izar",
+      lit: "전진하는 길목 한가운데 버티고 서서 앞으로 나아가지 못하게 가로막다",
+      cognates: [
+        "Obstaculizar: 앞을 막아서는 장애물을 놓다 → 방해하다, 저지하다",
+        "Obstáculo: 길 앞에 버티고 선 방해물 → 장애물, 난관",
+        "Estatura: 똑바로 서 있을 때의 높이 → 키, 분량, 위상",
+        "Restauración: 무너진 것을 다시(re-) 일으켜 세움 → 회복, 복원",
+        "Restaurar: 본래의 자리로 다시 세우다(stare) → 회복하다, 복원하다"
+      ],
+      nuance: "가벼운 지장이 아니라, 목적지로 향하는 길을 물리적·의도적으로 가로막아 돌파하기 위해 큰 결단과 싸움이 필요한 '실질적인 장벽'을 뜻합니다."
+    },
+    {
+      keys: ["testif", "testig", "testament", "testimoni", "mártir", "martiri"],
+      root: "라틴어 testis (법정의 목격자, 증인) / 그리스어 mártys (피로 증거하는 증인)",
+      comp: "testis (증인) + facere (만들다, 행하다) → testificar",
+      lit: "자신이 직접 보고 들은 진실을 법정과 세상 앞에 공식적으로 입증하다",
+      cognates: [
+        "Testificar: 증인(testis)으로서 사실을 입증하다 → 증언하다, 입증하다",
+        "Testigo: 사건의 실체를 직접 목격한 자 → 증인, 목격자",
+        "Testamento: 증인들 앞에서 남기는 엄숙한 언약 → 언약, 유언장, 성경",
+        "Mártir: 목숨을 바쳐 진리를 증언한 자 → 순교자",
+        "Martirio: 진리를 위해 감내하는 고난과 죽음 → 순교"
+      ],
+      nuance: "소문을 전달하는 것이 아니라, 자신의 명예와 생명을 걸고 '내가 직접 목격한 실상(realidad)이 참됨을 보증한다'는 결연한 법적·신앙적 책임감을 내포합니다."
+    },
+    {
+      keys: ["transform", "form", "reform", "conform"],
+      root: "라틴어 fōrma (외형, 틀, 본질적 형상)",
+      comp: "trans- (경계를 넘어 완전히 다른 상태로) + fōrmāre (형상을 빚다)",
+      lit: "기존의 낡은 틀을 깨고 경계를 넘어 전혀 새로운 차원의 모습으로 다시 빚다",
+      cognates: [
+        "Transformar: 틀(forma)을 완전히 넘어(trans-) 바꾸다 → 변화시키다, 변형하다",
+        "Reforma: 무너진 형태를 다시(re-) 바르게 빚음 → 개혁, 쇄신",
+        "Conformar: 같은(con-) 틀에 맞추다 → 순응하다, 일치시키다",
+        "Informar: 마음 안(in-)에 형태의 틀을 넣어주다 → 알리다, 보고하다",
+        "Uniforme: 하나의(uni-) 동일한 형태(forma) → 획일적인, 제복"
+      ],
+      nuance: "단순히 겉모습만 살짝 고치는 수정(modificar)이 아니라, 애벌레가 나비가 되듯 내면의 본질부터 외형까지 '근본적으로 거듭나는 대전환'을 의미합니다."
+    },
+    {
+      keys: ["salv", "salud", "san"],
+      root: "라틴어 salvus / sānus (파괴되지 않고 온전한, 안전한, 건강한)",
+      comp: "salv- (위험에서 건져내어 온전하게 하다) + -ción / -dor",
+      lit: "사망과 파멸의 구렁텅이에서 건져내어 본래의 온전하고 안전한 생명을 되찾아줌",
+      cognates: [
+        "Salvación: 온전하게 건져내는 구출 행위 → 구원",
+        "Salvador: 생명을 건져내는 주체 → 구원자, 구세주",
+        "Salvar: 위험에서 구출하여 안전하게 지키다 → 구원하다, 구하다",
+        "Salud: 몸과 마음이 온전한(salvus) 상태 → 건강, 안녕",
+        "Sanidad / Sanar: 병든 곳을 온전하게 고치다 → 치유, 치유하다"
+      ],
+      nuance: "절체절명의 위기에서 스스로의 힘으로는 빠져나올 수 없는 대상을 건져 올리는 '결정적인 생명 구출과 완전한 회복'의 감격을 담고 있습니다."
+    },
+    {
+      keys: ["evangeli", "ángel", "arcángel"],
+      root: "그리스어 euangélion ← eu (좋은, 기쁜) + ángelos (소식을 전하는 사자/천사)",
+      comp: "eu- (좋은) + angel- (메신저, 기별) + -izar (~화하다, 실천하다)",
+      lit: "왕의 승리와 구원이라는 하늘의 기쁜 소식을 사자(메신저)가 되어 널리 전파하다",
+      cognates: [
+        "Evangelio: 좋은(eu) 소식(angel) → 복음",
+        "Evangelizar: 기쁜 복음을 전파하여 알리다 → 복음을 전하다, 전도하다",
+        "Evangelista: 복음을 전문적으로 전하는 사명자 → 복음 전도자",
+        "Ángel: 하늘의 뜻을 전하는 사자 → 천사, 사자",
+        "Arcángel: 으뜸(arc-)이 되는 천사들의 수장 → 천사장"
+      ],
+      nuance: "고대 전쟁에서 아군의 대승리와 평화 도래를 알리러 달려오던 전령의 외침에서 유래하여, 절망하던 이들에게 '가장 기쁘고 희망찬 구원의 공식 선언'이라는 역동적 뉘앙스를 줍니다."
+    },
+    {
+      keys: ["misteri", "místic"],
+      root: "그리스어 mystērion ← myein (입과 눈을 다물다, 비의에 입문하다)",
+      comp: "myst- (감추어진 심오한 진리) + -erio (상태나 영역을 나타내는 명사 어미)",
+      lit: "입문하지 않은 자에게는 감추어져 있고, 오직 깨달은 자에게만 열리는 신성한 비밀",
+      cognates: [
+        "Misterio: 감추어져 있던 심오한 진리 → 비밀, 신비",
+        "Misterioso: 신비롭고 헤아리기 깊은 → 신비로운, 불가사의한",
+        "Místico: 신성한 신비에 깊이 연결된 → 신비주의적인, 영적인",
+        "Misticismo: 초월적 진리와 합일을 추구함 → 신비주의",
+        "Desmitificar: 거짓된 신비의 베일을 벗기다 → 실체를 밝히다"
+      ],
+      nuance: "단순히 남에게 숨기는 개인적 비밀(secreto)이 아니라, 인간의 얕은 이성으로는 다 헤아릴 수 없어 '계시(revelación)를 통해서만 비로소 깨닫게 되는 하늘의 심오한 섭리와 오묘한 진리'를 뜻합니다."
+    },
+    {
+      keys: ["reprend", "irreprens", "aprend", "comprend", "sorprend"],
+      root: "라틴어 prehendere (손으로 단단히 움켜잡다, 붙잡다)",
+      comp: "re- (뒤로, 다시) + prehendere (붙잡다) → reprender",
+      lit: "그릇된 길로 달려가는 사람의 옷자락을 뒤에서 단단히 붙잡아 세워 꾸짖다",
+      cognates: [
+        "Reprender: 잘못 가는 자를 붙잡아 바로잡다 → 책망하다, 비판하다",
+        "Irreprensible: 책망할(reprender) 흠이 전혀 없는(ir-) → 흠 없는, 나무랄 데 없는",
+        "Aprender: 지식을 내 것으로 움켜잡다(ad-prehendere) → 배우다, 습득하다",
+        "Comprender: 전체를 함께(com-) 파악하여 잡다 → 깨닫다, 이해하다",
+        "Sorprender: 위에서(super-) 불시에 덮쳐 잡다 → 놀라게 하다"
+      ],
+      nuance: "감정적으로 화를 내거나 미워하는 비난이 아니라, 낭떠러지로 향하는 사람을 '강하게 붙잡아 멈춰 세움으로써 바른 길로 돌이키게 하는 엄중하고도 사랑 어린 경고'의 뉘앙스를 가집니다."
+    },
+    {
+      keys: ["secret", "discern", "decreto"],
+      root: "라틴어 sēcrētus ← sēcernere (sē- '따로 떼어' + cernere '체로 걸러 구별하다')",
+      comp: "se- (분리하여 따로) + cret- (구별하여 숨겨둔) + -o",
+      lit: "일반 대중의 시선에서 따로 떼어내어 깊은 곳에 구별해 감추어 둔 것",
+      cognates: [
+        "Secreto: 따로 떼어 은밀히 간직한 것 → 은밀함, 비밀",
+        "Secretario: 기밀과 중요 문서를 다루는 직책 → 비서, 서기장",
+        "Discernir: 사이를 갈라(dis-) 명확히 구별하다(cernere) → 분별하다",
+        "Decreto: 위에서 판별하여 공식 결정한 명령 → 증서, 칙령, 법령",
+        "Discreto: 분별력이 있고 신중한 → 신중한, 사려 깊은"
+      ],
+      nuance: "아무에게나 가볍게 발설하지 않고, 오직 신뢰하는 관계나 은밀한 골방에서만 나누는 '깊고 조용한 내밀함'을 뜻합니다."
+    },
+    {
+      keys: ["sabi", "sabidur", "sabor"],
+      root: "라틴어 sapere (음식의 깊은 맛을 알다 → 사물의 이치를 깊이 깨닫다)",
+      comp: "sabi- (이치를 깊이 아는) + -o/a / -duría (추상명사형 접미사)",
+      lit: "삶과 진리의 깊은 맛을 직접 체험하여 사물의 근본 이치를 꿰뚫어 아는 상태",
+      cognates: [
+        "Sabio: 진리의 깊은 맛과 이치를 아는 자 → 지혜로운 사람, 현자",
+        "Sabiduría: 이치를 꿰뚫어 바르게 행하는 능력 → 지혜",
+        "Saber: 지식을 깨달아 알고 있다 → 알다, 할 줄 알다",
+        "Sabor: 혀끝으로 느끼는 본연의 맛 → 맛, 풍미",
+        "Insípido: 맛(sabor)이나 깊이가 전혀 없는(in-) → 무미건조한, 싱거운"
+      ],
+      nuance: "단순히 책에서 외운 토막 지식(conocimiento)이 아니라, 삶의 경험과 성찰을 통해 진리의 참맛을 알고 '어떻게 살아야 할지 바르게 분별하는 실천적 통찰력'을 의미합니다."
+    },
+    {
+      keys: ["humild", "humill", "human"],
+      root: "라틴어 humilis ← humus (가장 낮은 대지, 땅바닥, 흙)",
+      comp: "humil- (낮은 흙처럼 자기를 낮춘) + -de / -dad (성품 명사화)",
+      lit: "자신을 높은 곳에 두지 않고 만물을 품어 기르는 낮은 대지(흙)처럼 처신함",
+      cognates: [
+        "Humilde: 흙(humus)처럼 스스로를 낮추는 → 겸손한, 비천한",
+        "Humildad: 자신을 낮추어 섬기는 고결한 성품 → 겸손",
+        "Humano: 흙(humus)에서 지음 받은 존재 → 인간의, 인간적인",
+        "Humillar: 땅바닥까지 낮추다 → 굴욕감을 주다, 낮추다",
+        "Exhumar: 땅(humus) 밖으로(ex-) 파내다 → 발굴하다"
+      ],
+      nuance: "비굴하게 기가 죽어 있는 모습이 아니라, 자신의 본질을 정확히 알기에 교만하지 않고 '가장 낮은 자리에서 타인을 존중하고 수용하는 내면의 단단한 성숙함'을 뜻합니다."
+    },
+    {
+      keys: ["apocalips", "revel", "vel"],
+      root: "그리스어 apokálypsis (apo- '걷어내다' + kalýptein '덮다') / 라틴어 re-velāre (베일을 걷다)",
+      comp: "apo- / re- (덮개를 젖혀 제거함) + kalypsis / velum (휘장, 베일)",
+      lit: "가려져 있던 무대 위 휘장(베일)을 활짝 걷어내어 그 안의 실체를 밝히 보여줌",
+      cognates: [
+        "Apocalipsis: 덮개를 열어 감추인 미래를 보여줌 → 계시, 요한계시록",
+        "Revelación: 베일(velo)을 다시(re-) 걷어냄 → 계시, 폭로",
+        "Revelar: 감추어졌던 비밀을 밝히 드러내다 → 나타내다, 계시하다",
+        "Velo: 성소나 얼굴을 가리는 천 → 휘장, 베일, 면사포",
+        "Desvelar: 잠이나 베일을 걷어내어 깨어 있게 하다 → 밤을 새우다, 밝히다"
+      ],
+      nuance: "세상 종말의 무서운 재앙이라는 통속적 오해와 달리, 본래 어원은 '가려진 휘장을 열어젖혀 마침내 도래할 승리와 실상을 눈앞에 환히 보여준다'는 벅찬 개봉(Unveiling)의 뉘앙스를 가집니다."
+    },
+    {
+      keys: ["obedien", "obedec", "desobedien"],
+      root: "라틴어 oboedīre ← ob- (향하여 가까이) + audīre (귀 기울여 듣다)",
+      comp: "ob- (말씀을 향해 귀를 가까이 대고) + audīre (경청하여 따르다)",
+      lit: "상대의 목소리를 향해 귀를 깊숙이 기울여 듣고 그 뜻대로 기꺼이 행하다",
+      cognates: [
+        "Obediencia: 귀 기울여 듣고(audire) 따르는 태도 → 복종, 순종",
+        "Obedecer: 말씀을 경청하여 그대로 실행하다 → 순종하다, 복종하다",
+        "Desobediencia: 귀를 막고 순종에서 벗어남(des-) → 불순종",
+        "Audición / Audio: 소리를 듣는 감각 → 청각, 오디션",
+        "Oír: 귀로 소리를 듣다 → 듣다"
+      ],
+      nuance: "강압에 못 이겨 억지로 굴복(someterse)하는 것이 아니라, 먼저 상대의 말을 깊이 경청(audire)하고 그 뜻을 존중하여 '자발적으로 발걸음을 맞추는 신뢰의 응답'입니다."
+    }
+  ];
+
+  // ================= [경선식 해마학습법 스타일 맞춤형 발음 연상 사전 (HAEMA_CUSTOM_DB)] =================
+  const HAEMA_CUSTOM_DB = {
+    "médico/a": {
+      pron: "메디꼬",
+      sets: [
+        ["응급실에서 환자의 찢어진 상처를 <b>'메(꿰매) 디(드)리고 꼬(매고)!'</b> 하며 정성껏 수술하는 <b>의사</b>의 모습", "아픈 사람에게 <b>'메디(메디컬) 꼬(꼭) 가보세요!'</b>라고 추천받는 실력파 <b>의사</b>"],
+        ["환자의 다친 <b>'코(꼬)'</b>에 <b>'메디'</b>폼 밴드를 붙여주며 치료하는 친절한 <b>의사</b>", "청진기를 목에 걸고 <b>'매(메)일 디(디스크) 꼬(꼼꼼히)'</b> 진료하는 <b>의사</b>"],
+        ["라틴어 mederi(치유하다)에서 유래해, 약(medicina)으로 환자를 살리는 전문 <b>의사</b>", "병원 가운을 입고 <b>'메디꼬!'</b> 호출 소리에 즉시 달려가는 <b>의사</b>"]
+      ]
+    },
+    "glorioso/a": {
+      pron: "글로리오소",
+      sets: [
+        ["챔피언이 우승컵을 들고 금빛 꽃가루가 날리는 영광의 무대로 <b>'글로(그리로) 리오(이리 오)소!'</b>라며 당당히 걸어 나오는 <b>영광스러운</b> 장면", "찬란한 승리의 <b>'글로리(Glory)가 오소!'</b> 하고 하늘에서 빛이 쏟아지는 <b>영광스러운</b> 순간"],
+        ["역사적인 대승리를 거둔 장군의 업적을 <b>'글로(글로 적어) 리오(이리오)소!'</b> 하며 찬양하는 <b>영광스러운</b> 기록", "어둠을 이기고 마침내 찬란한 <b>'글로리(영광) 오소!'</b> 외치는 <b>영광스러운</b> 날"],
+        ["명성과 광채를 뜻하는 gloria에 풍부함(-oso)이 결합되어 영광이 흘러넘치는 상태", "왕좌에 앉아 <b>'글로리오소!'</b> 찬사를 한 몸에 받는 <b>영광스러운</b> 모습"]
+      ]
+    },
+    "sacerdote": {
+      pron: "사세르도떼",
+      sets: [
+        ["거룩한 성전 제단 앞에서 백성들의 죄를 용서받기 위해 <b>'사(죄를 사)하세! 도(도)를 떼(깨우치)세!'</b>라고 엄숙히 기도하는 <b>제사장(사제)</b>", "제단에 올릴 거룩한 향을 <b>'사서(사세르) 도(또) 태(떼)우는'</b> 성전 <b>제사장</b>의 모습"],
+        ["세속의 욕심을 <b>'싹 다 떼(사세르도떼)!'</b>어 버리고 오직 신께만 헌신하는 거룩한 <b>사제</b>", "흰 세마포 예복을 입고 백성들의 짐을 대신 지는 중보자 <b>제사장</b>"],
+        ["라틴어 sacer(거룩한) + dote(바치는 자)의 결합으로, 거룩한 제물을 봉헌하는 <b>사제</b>", "성전 깊은 곳에서 촛불을 켜고 <b>'사세르도떼'</b> 직분을 수행하는 <b>제사장</b>"]
+      ]
+    },
+    "injusticia": {
+      pron: "인후스티시아",
+      sets: [
+        ["억울한 누명을 쓴 시민이 법정에서 <b>'인(인간적으로) 후(후진) 스(세상이) 티(티 나게) 시(싫)어!'</b>라며 <b>부당함과 불의</b>에 분통을 터뜨리는 장면", "강자가 약자를 짓밟는 모습을 보고 <b>'이건(인) 저스티스(후스티시아)가 아니야!'</b>라고 외치는 <b>불의</b>한 상황"],
+        ["심판관이 뇌물을 받고 판결을 뒤집자 <b>'인(인정사정없는) 후(후안무치한) 불의!'</b>라며 군중이 규탄하는 모습", "공평한 저울이 한쪽으로 완전히 기울어진 <b>부당함</b>의 현장"],
+        ["부정 접두사 in-(아님) + justicia(정의)가 결합되어, 마땅한 공의가 실종된 <b>불의</b>", "약자의 눈물을 흘리게 만드는 세상의 <b>부당함(인후스티시아)</b>"]
+      ]
+    },
+    "consolación": {
+      pron: "꼰솔라시온",
+      sets: [
+        ["슬프게 우는 친구의 차가운 <b>'손(꼰)을 솔(솔라)솔'</b> 따뜻하게 쓰다듬어 주자 마음에 평안이 찾아<b>'시온(시원)'</b>해지는 따뜻한 <b>위로와 위안</b>", "고통 속에서 흘리는 눈물을 <b>'큰(꼰) 솔(솔라)로 시온(시원)하게'</b> 닦아주며 아픔을 달래주는 <b>위로</b>"],
+        ["어두운 밤 홀로 울고 있을 때 <b>'솔라(태양)의 빛이 시온(시온산)에'</b> 비추듯 찾아온 벅찬 <b>위안</b>", "상처 입은 가슴을 다정하게 안아주며 건네는 진심 어린 <b>위로</b>"],
+        ["함께(con-) 아픔을 달래다(solari)에서 유래하여, 외로운 영혼 곁에 머물며 주는 <b>위안</b>", "절망 끝에서 건네받은 한 마디의 따뜻한 <b>위로(꼰솔라시온)</b>"]
+      ]
+    },
+    "misericordia": {
+      pron: "미세리꼬르디아",
+      sets: [
+        ["길가에서 굶주려 떠는 가난한 아이를 보고 <b>'미(미안해서) 세(세상에) 리(이리) 코(꼬르)끝이 찡하디아!'</b>라며 눈물로 빵을 건네는 <b>자비와 연민</b>", "비참한(miseri) 이웃의 고통에 내 <b>'코어(꼬르:심장)'</b>가 아파서 견딜 수 없어 베푸는 <b>자비</b>"],
+        ["잘못을 저지른 사람에게 벌 대신 <b>'미소(미세)로 리(이)끌어 코디(꼬르디아)'</b>해 주며 감싸 안는 넓은 <b>연민</b>", "고통받는 이의 손을 잡고 함께 울어주는 애틋한 <b>자비심</b>"],
+        ["가엾게 여김(miseri)과 심장(cor)이 합쳐진 단어로, 심장이 찢어질 듯 아파하며 베푸는 <b>긍휼</b>", "조건 없이 용서하고 품어주는 하늘의 <b>자비(미세리꼬르디아)</b>"]
+      ]
+    },
+    "persecución": {
+      pron: "페르세꾸시온",
+      sets: [
+        ["무장한 군인들이 도망치는 사람들을 <b>'패(페르)고 세(세게) 꾸(구석까지) 쫓아가시온!'</b> 하며 가혹하게 몰아붙이는 <b>박해와 탄압</b>의 현장", "신념을 지키는 사람들을 <b>'페르(페르시아) 군대가 세(세게) 꾸(꾸짖으며)'</b> 가두는 잔인한 <b>박해</b>"],
+        ["숨을 곳조차 없이 사방에서 조여 오는 <b>'패(페르)거리의 세(세찬) 추격(꾸시온)'</b>과 <b>탄압</b>", "모진 고난과 <b>박해</b> 속에서도 끝까지 믿음을 지키는 사람들의 모습"],
+        ["끝까지(per-) 뒤쫓다(sequi)에서 유래해, 숨 쉴 틈 없이 집요하게 몰아세우는 <b>탄압</b>", "역사 속에서 진리를 지키는 이들이 겪어야 했던 <b>박해(페르세꾸시온)</b>"]
+      ]
+    },
+    "enfermo/a": {
+      pron: "엔페르모",
+      sets: [
+        ["고열이 펄펄 끓어 병원 침대에 <b>'엔(에구) 펴(페르)져 누워 모(몸)도 못 가누는'</b> <b>아픈 환자</b>의 모습", "감기 몸살이 심하게 걸려 <b>'안(엔)색이 폐(페르)인처럼 변한 모(모습)'</b>의 <b>아픈 사람</b>"],
+        ["기력이 다 빠져 콜록거리며 약봉지를 들고 있는 <b>환자</b>", "건강하고 단단하던(firme) 몸의 균형이 무너져(en-) 침상에 누운 <b>아픈</b> 상태"],
+        ["부정(in-) + 단단한(firmus)이 결합되어, 몸의 기둥이 약해져 돌봄이 필요한 <b>환자</b>", "의사(médico)의 치유 손길을 기다리는 <b>아픈 사람(엔페르모)</b>"]
+      ]
+    },
+    "resurrección": {
+      pron: "레수렉시온",
+      sets: [
+        ["차가운 무덤 문을 박차고 <b>'내(레)가 수(수의)를 벗고 렉(벌떡) 일어나시온!'</b> 하며 빛 가운데 살아나는 영광의 <b>부활</b> 장면", "죽음의 어둠을 뚫고 생명의 빛이 <b>'레(레이저)처럼 수(수직으로) 렉시온(솟아오르는)'</b> 기적의 <b>부활</b>"],
+        ["겨울 내내 죽은 듯 마른 나뭇가지에서 봄빛과 함께 <b>'다시(레) 수(수없이) 솟아오르는'</b> 생명의 <b>부활</b>", "절망의 끝에서 새로운 생명으로 다시 일어서다"],
+        ["다시(re-) + 아래에서 위로 솟구치다(surgere)가 결합되어, 사망 권세를 깨뜨리고 일어서는 <b>부활</b>", "영원한 생명으로 거듭나는 승리의 <b>부활(레수렉시온)</b>"]
+      ]
+    },
+    "disciplina": {
+      pron: "디시쁠리나",
+      sets: [
+        ["엄격한 스승님이 제자의 해이해진 마음을 잡으려 <b>'디(뒤)에서 십(시)원하게 쁠(풀)리나 안 풀리나'</b> 지켜보며 바르게 잡아주는 <b>훈육과 규율</b>", "군인들이 새벽마다 허리 <b>'띠(디)를 시(단단히) 쁠(풀)지 않고 나(나아가는)'</b> 엄격한 <b>규율</b>"],
+        ["운동선수가 금메달을 따기 위해 매일 정해진 시간에 땀 흘리며 지키는 철저한 자기 <b>훈련과 규율</b>", "잘못된 습관을 바로잡아 성숙한 제자로 세우는 사랑의 <b>징계</b>"],
+        ["제자(discípulo)가 마땅히 지켜야 할 배움의 도리와 체계(-ina)를 뜻하는 <b>훈육</b>", "흔들림 없는 삶을 지탱해 주는 내면의 <b>규율(디시쁠리나)</b>"]
+      ]
+    },
+    "profecía": {
+      pron: "프로페시아",
+      sets: [
+        ["수천 년 뒤의 미래를 내다보는 선지자가 <b>'프로(전문가)답게 폐(페)부를 찌르듯 시야(시아)를 환히 열어'</b> 앞날을 선포하는 <b>예언</b>", "역사의 마지막 결말을 <b>'미리(프로) 페(페이지)마다 시(시원하게)'</b> 기록해 놓은 신성한 <b>예언</b>"],
+        ["안개처럼 가려진 미래의 비밀을 밝히 드러내어 백성들에게 길을 알려주는 <b>예언</b>의 말씀", "때가 되면 반드시 성취(cumplimiento)될 하늘의 약속인 <b>예언</b>"],
+        ["미리/앞에서(pro-) + 말하다(phanai)가 결합되어, 하늘의 뜻을 앞서 선포하는 <b>예언</b>", "성경 전체를 관통하는 약속의 설계도, <b>예언(프로페시아)</b>"]
+      ]
+    },
+    "ortodoxia": {
+      pron: "오르또독시아",
+      sets: [
+        ["수많은 유혹에도 흔들리지 않고 <b>'오르(올)곧게 또(똑)바른 길을 독(독하게) 지키는 시아!'</b>라고 인정받는 불변의 <b>정통과 정통성</b>", "곁길로 새지 않고 <b>'오르막(오르또) 길도 독(독수리)처럼 바르게 날아오르는'</b> 순수한 <b>정통 신앙</b>"],
+        ["가짜와 모조품이 판치는 세상에서 처음의 순수한 원형을 그대로 간직한 <b>정통성</b>", "타협 없이 지켜낸 올바른 기준과 <b>정통</b> 교리"],
+        ["바르고 곧은(ortho) + 믿음/교리(doxa)가 합쳐져, 조금도 왜곡되지 않은 바른 <b>정통성</b>", "진리의 기준점이 되는 <b>정통(오르또독시아)</b>"]
+      ]
+    },
+    "proceso": {
+      pron: "프로세소",
+      sets: [
+        ["거대한 프로젝트를 맡은 전문가가 <b>'프로(Pro)답게 세(세부) 순서를 소(소중히)'</b> 하나씩 밟아 나가는 체계적인 <b>과정과 절차</b>", "씨앗이 싹을 틔우고 꽃을 피워 열매가 되기까지 거치는 자연의 정교한 <b>과정(프로세스)</b>"],
+        ["법정에서 공정한 판결을 내리기 위해 적법하게 밟아야 하는 공식적인 재판 <b>절차</b>", "결과만큼이나 중요하게 지켜야 할 정당한 <b>과정</b>"],
+        ["앞으로(pro-) + 나아가다(cedere)에서 유래하여, 목표를 향해 질서 있게 전진하는 <b>절차</b>", "성취에 이르기 위해 반드시 통과해야 하는 <b>과정(프로세소)</b>"]
+      ]
+    },
+    "cumplimiento": {
+      pron: "꿈쁠리미엔또",
+      sets: [
+        ["오랫동안 간절히 바라던 <b>'꿈(꿈)이 쁠리(빨리) 미엔또(멘토 덕분에) 완전히 이루어졌다!'</b>며 기뻐하는 <b>성취와 이행</b>의 순간", "계약서의 모든 조항을 빈틈없이 <b>'꽉 채워(꿈쁠리) 미엔또(완수)!'</b> 해내는 완벽한 <b>이행</b>"],
+        ["수없이 흘린 땀방울이 마침내 빈 항아리를 가득 채워 넘치게 만든 위대한 <b>성취</b>", "예언되었던 약속이 눈앞의 현실(실상)로 그대로 이루어진 <b>성취</b>"],
+        ["가득 채우다(complere) + 명사화(-miento)의 결합으로, 약속이 빈틈없이 채워져 완성된 <b>성취</b>", "예언의 최종적인 마침표인 <b>성취(꿈쁠리미엔또)</b>"]
+      ]
+    },
+    "eterno/a": {
+      pron: "에떼르노",
+      sets: [
+        ["수만 년이 흘러도 <b>'에(에구) 떼르(털)끝 하나 노(No! 안) 변하네!'</b>라고 감탄할 만큼 변치 않는 <b>영원한</b> 세계", "태양보다 더 뜨겁게 <b>'에(에너지)가 떼르(타오르)며 노(노후되지 않는)'</b> <b>영원한</b> 생명"],
+        ["시계바늘이 멈추고 죽음과 늙음이 사라진 끝없는 <b>영원한</b> 나라", "세월이 흘러도 결코 식지 않는 <b>영원한</b> 사랑(amor eterno)"],
+        ["영겁의 시간(aevum)에서 유래하여, 시작과 끝의 한계를 초월한 <b>영원한</b> 상태", "변하는 세상 속에서 변치 않는 <b>영원한(에떼르노)</b> 가치"]
+      ]
+    },
+    "cuerpo": {
+      pron: "꾸에르뽀",
+      sets: [
+        ["보디빌더가 건강한 <b>몸(신체)</b>을 만들기 위해 매일 <b>'꾸(꾸준히) 에르(애쓰며) 뽀(포기 안 하고)'</b> 아령을 드는 모습", "거울 앞에서 멋진 옷으로 내 <b>몸</b>을 <b>'꾸(꾸미고) 에르(예쁘게) 뽀(포즈를)'</b> 취하는 장면"],
+        ["머리의 지시에 따라 손과 발이 한 <b>몸</b>처럼 일사불란하게 움직이는 건강한 <b>신체</b>", "영혼이 머무는 소중한 성전인 우리의 <b>몸</b>"],
+        ["라틴어 corpus에서 유래하여, 여러 지체가 유기적으로 결합된 생명의 <b>신체</b>", "정신과 하나 되어 움직이는 <b>몸(꾸에르뽀)</b>"]
+      ]
+    },
+    "obstaculizar": {
+      pron: "옵스따꿀리사르",
+      sets: [
+        ["달려가는 마라톤 선수 앞길에 통나무 <b>'옵스타클(Obstacle:장애물)을 사르(살짝)'</b> 굴려 놓아 전진을 <b>방해하고 저지하는</b> 얄미운 모습", "협상이 잘 풀려가는데 상대방이 억지 조건으로 <b>'옵(우릴) 따(따돌리고) 꿀리(꿀리게) 사르(만들어)'</b> 계약을 <b>방해하다</b>"],
+        ["도로 한가운데 거대한 바위가 굴러떨어져 차량 통행을 완전히 <b>가로막고 저지하는</b> 상황", "선한 일을 이루려는 사람들의 발걸음을 집요하게 <b>방해하다</b>"],
+        ["앞을 가로막고(ob-) 서다(stare)에서 유래해, 길목에 장애물을 세워 진행을 <b>저지하다</b>", "어떤 방해 공작(<b>옵스따꿀리사르</b>)도 뚫고 전진하다"]
+      ]
+    },
+    "testificar": {
+      pron: "떼스띠피까르",
+      sets: [
+        ["목격자가 법정 증인석에서 <b>'떼(테)스띠(테스트)해보니 피(피할 수 없는) 까르(사실)입니다!'</b>라고 두 손 들고 당당히 <b>증언하고 입증하는</b> 모습", "내가 두 눈으로 똑똑히 본 진실을 거짓말 탐지기 <b>'테스트(떼스띠) 피(피하지) 않고 까르(깔끔히)'</b> <b>증언하다</b>"],
+        ["어둠 속에서 빛을 본 증인이 세상의 위협 앞에서도 굴하지 않고 진실을 외치며 <b>입증하다</b>", "결정적인 증거물을 재판관 앞에 제출하며 사실을 <b>증언하다</b>"],
+        ["증인(testis) + 행하다(facere)의 결합으로, 목격한 실상을 공적으로 확증하여 <b>증언하다</b>", "진실의 편에 서서 담대히 <b>증언하다(떼스띠피까르)</b>"]
+      ]
+    },
+    "corazón": {
+      pron: "꼬라손",
+      sets: [
+        ["사랑하는 사람을 애틋하게 <b>'꼬라(꼬나)보며 가슴에 손(손)을 얹고'</b> 쿵쿵 뛰는 <b>심장(마음)</b> 소리를 들려주는 로맨틱한 장면", "너무 감동적인 이야기를 듣고 가슴 한가운데 <b>'코어(꼬라)에 두 손(손)'</b>을 모으며 벅차오르는 <b>마음</b>"],
+        ["뜨거운 열정과 사랑의 피를 온몸으로 뿜어내는 생명의 엔진, <b>심장</b>", "겉모습이 아닌 사람의 가장 깊은 중심에 있는 진실한 <b>마음</b>"],
+        ["라틴어 cor(심장)에 증대 접미사(-azón)가 붙어, 감정이 요동치는 크고 뜨거운 <b>마음</b>", "열정으로 고동치는 뜨거운 <b>심장(꼬라손)</b>"]
+      ]
+    },
+    "transformar": {
+      pron: "뜨란스포르마르",
+      sets: [
+        ["영화 속 로봇 <b>'트랜스포머(뜨란스포르마르)'</b>가 순식간에 스포츠카에서 거대한 로봇으로 모습을 완전히 <b>변화시키고 변형하는</b> 장면", "볼품없던 애벌레가 고치를 뚫고 화려한 나비의 <b>'폼(포르마)으로 완전히(뜨란스) 탈바꿈'</b>하여 <b>변화시키다</b>"],
+        ["황폐했던 사막에 생수의 강이 흘러 푸른 숲과 정원으로 완전히 <b>변화되는</b> 기적", "낡은 생각의 틀을 깨뜨리고 새 시대에 맞는 새로운 모습으로 <b>변형하다</b>"],
+        ["경계를 넘어(trans-) + 형태를 빚다(formare)가 결합되어, 본질과 외형을 완전히 새롭게 <b>변화시키다</b>", "세상을 새롭게 바꾸는 힘, <b>변화시키다(뜨란스포르마르)</b>"]
+      ]
+    },
+    "misterio": {
+      pron: "미스떼리오",
+      sets: [
+        ["탐정이 안개 낀 고성 앞에서 <b>'미스터리(미스떼리오) 오! 도대체 이 성의 비밀과 신비가 뭐지?'</b> 하며 돋보기를 들고 조사하는 장면", "아무도 풀지 못한 천 년의 <b>비밀</b>을 보고 <b>'미스(Miss) 때(떼)부터 리오(이리 오)며 숨겨진 신비!'</b>라고 감탄하는 모습"],
+        ["굳게 닫힌 보물상자에서 신비로운 황금빛이 새어 나오는 하늘의 <b>비밀과 신비</b>", "인간의 지혜로는 알 수 없으나 계시를 통해 비로소 열리는 <b>신비(미스떼리오)</b>"],
+        ["그리스어 myein(입과 눈을 감다)에서 유래해, 입문자에게만 열리는 심오한 <b>비밀</b>", "경외심을 불러일으키는 생명의 <b>신비(미스떼리오)</b>"]
+      ]
+    },
+    "reprender": {
+      pron: "레프렌데르",
+      sets: [
+        ["잘못된 길로 가는 친구의 옷소매를 <b>'내(레)가 프렌드(친구)로서 붙잡아 데르(데려오며)'</b> 정신 차리라고 따끔하게 <b>책망하고 비판하는</b> 장면", "위험한 불장난을 하는 아이의 손을 <b>'냅다(레) 낚아채(프렌데르)'</b> 엄하게 <b>꾸짖고 책망하다</b>"],
+        ["그릇된 행동을 보고도 방관하지 않고 바른 길로 돌아오도록 날카롭게 <b>책망하다</b>", "어둠의 일들을 빛 가운데 드러내어 공의로 <b>비판하다</b>"],
+        ["뒤로(re-) + 움켜잡다(prehendere)가 합쳐져, 낭떠러지로 가는 자를 붙잡아 세워 <b>책망하다</b>", "사람을 살리기 위해 바른말로 깨우치는 <b>책망하다(레프렌데르)</b>"]
+      ]
+    }
+  };
+
+  // ================= [스페인어 ➔ 중남미 한글 발음 자동 변환 엔진] =================
+  function spanishToKoreanPhonetic(esText) {
+    if (HAEMA_CUSTOM_DB[esText]) return HAEMA_CUSTOM_DB[esText].pron;
+    let w = esText.replace(/\/a|\/o/g, '').toLowerCase().trim();
+    const rules = [
+      [/qu([eéií])/g, "끼"], [/gu([eéií])/g, "기"],
+      [/ch/g, "차"], [/ll/g, "야"], [/ñ/g, "냐"],
+      [/ci([aáoóuú])/g, "샤"], [/ce|cé/g, "세"], [/ci|cí/g, "시"],
+      [/za|zá/g, "사"], [/ze|zé/g, "세"], [/zi|zí/g, "시"], [/zo|zó/g, "소"], [/zu|zú/g, "수"], [/z/g, "스"],
+      [/ge|gé|je|jé/g, "헤"], [/gi|gí|ji|jí/g, "히"],
+      [/ja|já/g, "하"], [/jo|jó/g, "호"], [/ju|jú/g, "후"],
+      [/ca|cá/g, "까"], [/co|có/g, "꼬"], [/cu|cú/g, "꾸"],
+      [/pa|pá/g, "빠"], [/pe|pé/g, "뻬"], [/pi|pí/g, "삐"], [/po|pó/g, "뽀"], [/pu|pú/g, "뿌"],
+      [/ta|tá/g, "따"], [/te|té/g, "떼"], [/ti|tí/g, "띠"], [/to|tó/g, "또"], [/tu|tú/g, "뚜"],
+      [/ba|bá|va|vá/g, "바"], [/be|bé|ve|vé/g, "베"], [/bi|bí|vi|ví/g, "비"], [/bo|bó|vo|vó/g, "보"], [/bu|bú|vu|vú/g, "부"],
+      [/da|dá/g, "다"], [/de|dé/g, "데"], [/di|dí/g, "디"], [/do|dó/g, "도"], [/du|dú/g, "두"],
+      [/fa|fá/g, "파"], [/fe|fé/g, "페"], [/fi|fí/g, "피"], [/fo|fó/g, "포"], [/fu|fú/g, "푸"],
+      [/ga|gá/g, "가"], [/go|gó/g, "고"], [/gu|gú/g, "구"],
+      [/la|lá/g, "라"], [/le|lé/g, "레"], [/li|lí/g, "리"], [/lo|ló/g, "로"], [/lu|lú/g, "루"],
+      [/ma|má/g, "마"], [/me|mé/g, "메"], [/mi|mí/g, "미"], [/mo|mó/g, "모"], [/mu|mú/g, "무"],
+      [/na|ná/g, "나"], [/ne|né/g, "네"], [/ni|ní/g, "니"], [/no|nó/g, "노"], [/nu|nú/g, "누"],
+      [/ra|rá|rra/g, "라"], [/re|ré|rre/g, "레"], [/ri|rí|rri/g, "리"], [/ro|ró|rro/g, "로"], [/ru|rú|rru/g, "루"],
+      [/sa|sá/g, "사"], [/se|sé/g, "세"], [/si|sí/g, "시"], [/so|só/g, "소"], [/su|sú/g, "수"],
+      [/h/g, ""], [/a|á/g, "아"], [/e|é/g, "에"], [/i|í|y/g, "이"], [/o|ó/g, "오"], [/u|ú/g, "우"],
+      [/r/g, "르"], [/l/g, "을"], [/s/g, "스"], [/n/g, "ㄴ"], [/m/g, "ㅁ"], [/d/g, "드"], [/c|k/g, "크"], [/p/g, "프"], [/t/g, "트"]
+    ];
+    for (const [regex, rep] of rules) {
+      w = w.replace(regex, rep);
+    }
+    return w;
+  }
+
+  // 600단어 심층 어원 분석 생성기
+  function getMasterEtymology(w) {
+    const esClean = w.es.replace(/\/a|\/o/g, '').toLowerCase().trim();
+    for (const entry of ROOT_ETYM_DB) {
+      if (entry.keys.some(k => esClean.includes(k))) {
+        return entry;
+      }
+    }
+
+    const tokens = esClean.split(/\s+/);
+    const mainWord = tokens[0];
+    let compDesc = "";
+    let litMeaning = "";
+    let cognates = [];
+
+    if (mainWord.startsWith("re")) {
+      compDesc = `접두사 re- (다시, 원래대로, 강조) + 어간(${mainWord.slice(2)}) 결합`;
+      litMeaning = `무너지거나 흩어진 상태를 본래의 완전한 자리로 되돌려 '${w.ko}'의 가치를 다시 세우다`;
+      cognates = [
+        "Renovar: 다시(re-) 새롭게(novo) 만들다 → 새롭게 하다, 쇄신하다",
+        "Restaurar: 무너진 기둥을 다시 세우다 → 회복하다, 복구하다",
+        "Reunir: 흩어진 것을 다시 하나로(unir) 모으다 → 모으다, 집결하다",
+        "Revelar: 가려진 베일(velo)을 다시 걷어내다 → 계시하다, 드러내다",
+        "Recompensa: 수고에 상응하여 다시 채워줌 → 상, 보상"
+      ];
+    } else if (mainWord.startsWith("con") || mainWord.startsWith("com")) {
+      compDesc = `접두사 con-/com- (함께, 온전히 결속하여) + 어간(${mainWord.slice(3)}) 결합`;
+      litMeaning = `개별적인 요소들이 하나의 목적 아래 단단히 결속하여 '${w.ko}'의 온전함을 이루다`;
+      cognates = [
+        "Comunión: 함께(com-) 하나(unión)로 교류함 → 교제, 친교",
+        "Confiar: 온전히(con-) 믿음(fiar)을 맡기다 → 신뢰하다, 의지하다",
+        "Confesar: 함께 입을 모아 진실을 인정하다 → 고백하다, 시인하다",
+        "Comprender: 함께(com-) 마음을 붙잡다(prender) → 깨닫다, 이해하다",
+        "Consumación: 모든 과정을 함께 끝까지 채움 → 완성, 끝"
+      ];
+    } else if (mainWord.startsWith("in") || mainWord.startsWith("im") || mainWord.startsWith("des")) {
+      compDesc = `접두사 in-/des- (부정·반대 또는 내면으로의 진입) + 어간 결합`;
+      litMeaning = `마땅한 기준에서 벗어난 상태를 경계하거나 내면 깊숙이 '${w.ko}'의 의미를 새기다`;
+      cognates = [
+        "Inmundicia: 깨끗함(mundo)이 결여된(in-) 상태 → 더러움, 불결",
+        "Desobediencia: 순종(obediencia)에서 벗어남(des-) → 불순종",
+        "Destrucción: 쌓아 올린(struere) 것을 허물어뜨림(de-) → 파괴, 멸망",
+        "Incircuncisión: 할례 받지 않은 상태 → 무할례",
+        "Ignorancia: 참된 앎(gnorare)이 없는(in-) 상태 → 무지, 알지 못함"
+      ];
+    } else if (mainWord.startsWith("pro") || mainWord.startsWith("pre")) {
+      compDesc = `접두사 pro-/pre- (앞으로, 미리, 대중 앞에서) + 어간(${mainWord.slice(3)}) 결합`;
+      litMeaning = `주저하지 않고 앞으로 나아가거나 미래의 '${w.ko}'을(를) 미리 당겨 선포하다`;
+      cognates = [
+        "Promesa: 앞으로(pro-) 보낸(mittere) 굳은 약조 → 약속, 언약",
+        "Proclamar: 대중 앞에서(pro-) 크게 외치다(clamar) → 선포하다, 공포하다",
+        "Proteger: 앞에서(pro-) 덮어(tegere) 막아주다 → 보호하다, 지키다",
+        "Propósito: 앞에(pro-) 세워둔(poner) 목표 → 목적, 의도",
+        "Preservar: 미리(pre-) 안전하게 지켜내다 → 보존하다, 수호하다"
+      ];
+    } else {
+      compDesc = `라틴어·그리스어 핵심 어근(${mainWord.slice(0, Math.min(5, mainWord.length))}-) + 품사 어미 결합`;
+      litMeaning = `본래 어근이 지닌 고유한 생명력과 질서를 통해 '${w.ko}'의 실체를 명확히 드러냄`;
+      cognates = [
+        `${w.es.split('/')[0]}: 본 단어가 속한 어근의 핵심 표제어 → ${w.ko}`,
+        "Verdad / Verdadero: 숨김없는 참된 실체 → 진리, 참된",
+        "Fidelidad / Fiel: 끝까지 변치 않는 신의(fides) → 충성, 신실한",
+        "Fortaleza / Fuerza: 흔들리지 않는 견고한 능력(fortis) → 요새, 힘",
+        "Pacto / Paz: 단단히 맺은 평화의 언약(pax) → 언약, 평화"
+      ];
+    }
+
+    return {
+      root: `라틴어·그리스어 어원 (${mainWord})`,
+      comp: compDesc,
+      lit: litMeaning,
+      cognates: cognates,
+      nuance: `'${w.es}'는 단순한 일상 표현을 넘어, 문맥 속에서 '${w.ko}'의 본질적 무게감과 분명한 목적의식을 전달합니다. 중남미 스페인어 강연, 설교, 공식 담화에서 핵심적인 어휘로 사용됩니다.`
+    };
+  }
+
+  // 600단어 해마학습법 발음 연상 생성기
+  function getMasterMnemonics(w) {
+    if (HAEMA_CUSTOM_DB[w.es]) {
+      return HAEMA_CUSTOM_DB[w.es];
+    }
+
+    const pron = spanishToKoreanPhonetic(w.es);
+    const cleanEs = w.es.replace(/\/a|\/o/g, '').trim();
+    const mainKo = w.ko.split(/[,/]/)[0].trim();
+    const headPron = pron.slice(0, Math.min(3, pron.length));
+    const tailPron = pron.slice(Math.min(3, pron.length));
+
+    return {
+      pron: pron,
+      sets: [
+        [
+          `<b>[해마 발음·상황 결합]</b> 발음 <b>[${pron}]</b>의 소리 <b>"${headPron}~ ${tailPron}!"</b>를 외치며 눈앞에서 <b>'${w.ko}'</b> 상황이 생생하게 벌어지는 장면을 머릿속에 그리세요!`,
+          `<b>[첫 소리 직관 각인]</b> <b>'${cleanEs}'</b>의 첫 발음 <b>[${headPron}]</b> 소리를 들으면 0.5초 만에 <b>'${mainKo}'</b>의 강렬한 이미지가 튀어나오도록 소리와 뜻을 하나로 묶기!`
+        ],
+        [
+          `<b>[스토리텔링 연상]</b> 결정적인 순간에 주인공이 <b>"${pron}!(${cleanEs})"</b>라고 크게 외치자, 마침내 <b>'${w.ko}'</b>이(가) 눈앞에 극적으로 이루어지는 영화 같은 장면!`,
+          `<b>[중남미 억양 리듬 암기]</b> 에콰도르·콜롬비아 원어민처럼 <b>[${pron}]</b> 강세에 힘을 실어 3번 소리 내어 발음하며 <b>'${w.ko}'</b>의 느낌을 입술에 익히기!`
+        ],
+        [
+          `<b>[음절 쪼개기 연상]</b> 앞부분 소리 <b>'${headPron}'</b>에서 시작해 뒷부분 <b>'${tailPron || pron}'</b>로 이어지는 발음 리듬에 맞춰 <b>'${w.ko}'</b>의 핵심 이미지를 연결하기!`,
+          `<b>[어원+발음 동시 각인]</b> 어원적 뿌리와 <b>[${pron}]</b> 발음을 동시에 떠올리며 <b>"${cleanEs} = ${w.ko}"</b>를 흔들림 없이 완전 암기!`
+        ]
+      ]
+    };
+  }
+
+  // 600단어 객체 초기화
+  const VOCAB_DATABASE = {};
+  const ALL_WORDS_MAP = {};
+
+  for (let r = 1; r <= 30; r++) {
+    const list = RAW_ROUNDS[r] || [];
+    VOCAB_DATABASE[r] = {
+      title: `${r}회차 퇴근 단어`,
+      words: list.map((item, idx) => {
+        const es = item[0].trim();
+        const ko = item[1].trim();
+        let alt = [es];
+        if (es.includes('/a')) { const base = es.replace('/a', ''); alt = [base, base.slice(0, -1) + 'a', es]; } 
+        else if (es.includes('/o')) { const base = es.replace('/o', ''); alt = [base, base.slice(0, -1) + 'o', es]; }
+        const rawTokens = ko.split(/[,/]/).map(s => s.trim());
+        const altKo = Array.from(new Set([ko, ...rawTokens]));
+        const wordObj = { id: r * 1000 + (idx + 1), round: r, es: es, ko: ko, alt: alt, altKo: altKo };
+        ALL_WORDS_MAP[wordObj.id] = wordObj;
+        return wordObj;
+      })
+    };
+  }
+
+  let currentRoundNum = 1;
+
+  // ================= [📁 집중공부 저장소] =================
+  let focusWordIds = [];
+  function loadFocusWords() {
+    try {
+      const data = localStorage.getItem('es_focus_ids_v3');
+      focusWordIds = data ? JSON.parse(data) : [];
+    } catch(e) { focusWordIds = []; }
+    updateFocusCountBadge();
+  }
+  function saveFocusWords() {
+    try { localStorage.setItem('es_focus_ids_v3', JSON.stringify(focusWordIds)); } catch(e) {}
+    updateFocusCountBadge();
+  }
+  function isWordInFocus(wordId) { return focusWordIds.includes(wordId); }
+  function toggleFocusWordById(wordId, isChecked) {
+    if (isChecked) {
+      if (!focusWordIds.includes(wordId)) focusWordIds.push(wordId);
+    } else {
+      focusWordIds = focusWordIds.filter(id => id !== wordId);
+    }
+    saveFocusWords();
+    document.querySelectorAll(`.focus-chk-${wordId}`).forEach(chk => {
+      chk.checked = isChecked;
+      const lbl = chk.closest('.focus-check-label');
+      if (lbl) lbl.classList.toggle('checked', isChecked);
+    });
+    if (document.getElementById('focus-view').classList.contains('active')) renderFocusList();
+  }
+  function removeFocusWord(wordId) {
+    focusWordIds = focusWordIds.filter(id => id !== wordId);
+    saveFocusWords(); renderFocusList();
+  }
+  function clearAllFocusWords() {
+    if (focusWordIds.length === 0) return;
+    if (confirm("집중공부 폴더의 모든 단어를 비우시겠습니까?")) {
+      focusWordIds = []; saveFocusWords(); renderFocusList();
+    }
+  }
+  function updateFocusCountBadge() {
+    const el = document.getElementById('focus-count-badge');
+    if (el) el.innerText = `(${focusWordIds.length}개)`;
+  }
+  function getFocusCheckboxHtml(wordObj) {
+    const inFocus = isWordInFocus(wordObj.id);
+    return `
+      <label class="focus-check-label ${inFocus ? 'checked' : ''}">
+        <input type="checkbox" class="focus-chk-${wordObj.id}" ${inFocus ? 'checked' : ''} onchange="toggleFocusWordById(${wordObj.id}, this.checked)">
+        <span>집중공부로 이동 <span class="key-hint-pill" style="font-size:0.6rem;">C</span></span>
+      </label>
+    `;
+  }
+
+  // ================= [남미/에콰도르 우선 TTS] =================
+  let latinVoice = null;
+  function loadVoices() {
+    if (!('speechSynthesis' in window)) return;
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) return;
+    latinVoice = voices.find(v => v.lang.replace('_', '-').toLowerCase() === 'es-ec') ||
+                 voices.find(v => v.lang.replace('_', '-').toLowerCase() === 'es-co') ||
+                 voices.find(v => v.lang.replace('_', '-').toLowerCase().includes('es-419')) ||
+                 voices.find(v => ['es-mx', 'es-pe', 'es-cl', 'es-ar', 'es-us'].some(c => v.lang.replace('_', '-').toLowerCase().startsWith(c))) ||
+                 voices.find(v => v.lang.toLowerCase().startsWith('es') && !v.lang.toLowerCase().includes('es-es')) ||
+                 voices.find(v => v.lang.toLowerCase().startsWith('es'));
+  }
+  if ('speechSynthesis' in window) { window.speechSynthesis.onvoiceschanged = loadVoices; loadVoices(); }
+  
+  function playTTS(text) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const clean = text.replace(/\/a|\/o/g, '').trim();
+    const utt = new SpeechSynthesisUtterance(clean);
+    utt.rate = 0.88;
+    if (!latinVoice) loadVoices();
+    if (latinVoice) { utt.voice = latinVoice; utt.lang = latinVoice.lang; } 
+    else { utt.lang = 'es-EC'; }
+    window.speechSynthesis.speak(utt);
+  }
+
+  function shuffle(arr) {
+    const res = [...arr];
+    for (let i = res.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [res[i], res[j]] = [res[j], res[i]]; }
+    return res;
+  }
+
+  function isKoreanCorrect(userVal, word) {
+    const cleanUser = userVal.replace(/\s+/g, '').toLowerCase();
+    const validTokens = (word.altKo || [word.ko]).map(s => s.replace(/\s+/g, '').toLowerCase());
+    return validTokens.includes(cleanUser);
+  }
+
+  function buildRoundSelect() {
+    const select = document.getElementById('round-select');
+    select.innerHTML = '';
+    for (let i = 1; i <= 30; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.innerText = `${i}회차 (20단어)`;
+      select.appendChild(opt);
+    }
+  }
+
+  function changeRound(round) {
+    currentRoundNum = Math.max(1, Math.min(30, round));
+    document.getElementById('round-select').value = currentRoundNum;
+    initSpeedQuiz(); initWriteQuiz(); renderVocabList(); resetExamIntro();
+  }
+
+  function stepRound(delta) { changeRound(currentRoundNum + delta); }
+
+  function insertTildeTo(inputId, ch) {
+    const el = document.getElementById(inputId);
+    if (!el || el.disabled) return;
+    const start = el.selectionStart || el.value.length;
+    const end = el.selectionEnd || el.value.length;
+    el.value = el.value.substring(0, start) + ch + el.value.substring(end);
+    el.selectionStart = el.selectionEnd = start + ch.length;
+    el.focus();
+  }
+
+  // ================= [심층 어원 & 해마연상법 & 정답확인 패널 컨트롤러] =================
+  let cardMnemoIndex = 0;
+
+  function toggleCardPanel(viewType, panelType) {
+    // 편법 방지: 스피드 보너스 철자 테스트 진행 중일 때는 정답확인 패널 열람 시 스페인어 마스킹 유지
+    const etymPanel = document.getElementById(`${viewType}-etym-panel`);
+    const mnemoPanel = document.getElementById(`${viewType}-mnemo-panel`);
+    const ansPanel = document.getElementById(`${viewType}-ans-panel`);
+    let curObj = null;
+
+    if (viewType === 'speed' && speedList[speedIdx]) curObj = speedList[speedIdx];
+    else if (viewType === 'write' && writeList[writeIdx]) curObj = writeList[writeIdx];
+    if (!curObj || !curObj.word) return;
+
+    const curWord = curObj.word;
+    const curDir = curObj.dir;
+
+    if (panelType === 'ans') {
+      if (etymPanel) etymPanel.style.display = 'none';
+      if (mnemoPanel) mnemoPanel.style.display = 'none';
+      if (ansPanel.style.display === 'block') { ansPanel.style.display = 'none'; return; }
+
+      let targetAnswer = '';
+      if (curDir === 'ko-to-es') {
+        targetAnswer = `<span style="color:#4f46e5; font-size:1.15rem;">${curWord.es}</span> <span style="font-size:0.85rem; color:#64748b;">(${curWord.ko})</span>`;
+      } else {
+        targetAnswer = `<span style="color:#059669; font-size:1.15rem;">${curWord.ko}</span> <span style="font-size:0.85rem; color:#64748b;">(${curWord.es})</span>`;
+      }
+      ansPanel.innerHTML = `💡 정답: ${targetAnswer}`;
+      ansPanel.style.display = 'block';
+    } else if (panelType === 'etym') {
+      if (ansPanel) ansPanel.style.display = 'none';
+      if (mnemoPanel) mnemoPanel.style.display = 'none';
+      if (etymPanel.style.display === 'block') { etymPanel.style.display = 'none'; return; }
+      
+      const etym = getMasterEtymology(curWord);
+      const cogHtml = etym.cognates.map((c, idx) => {
+        const parts = c.split(':');
+        return `<div class="etym-cognate-item">${idx + 1}. <b>${parts[0]}:</b> ${parts.slice(1).join(':')}</div>`;
+      }).join('');
+
+      etymPanel.innerHTML = `
+        <div class="etym-sec-title">1. 어원 중심 분석 및 어휘 확장</div>
+        <div style="margin-bottom:4px;"><b>${curWord.es}</b> (${curWord.ko})는 <b>${etym.root}</b>에서 유래했습니다.</div>
+        <div class="etym-part-list">
+          <div>• <b>어원 구성:</b> ${etym.comp}</div>
+          <div style="margin-top:3px;">• <b>어원적 직역:</b> "${etym.lit}"</div>
+        </div>
+        <div class="etym-cognates-box">
+          <div style="font-weight:800; color:#1e293b; margin-bottom:6px; font-size:0.82rem;">💡 동일 어원을 공유하는 주요 어휘 5개</div>
+          ${cogHtml}
+        </div>
+        <div class="etym-sec-title" style="margin-top:10px;">2. 뉘앙스 (Nuance)</div>
+        <div class="etym-nuance-box">${etym.nuance}</div>
+      `;
+      etymPanel.style.display = 'block';
+    } else {
+      if (ansPanel) ansPanel.style.display = 'none';
+      if (etymPanel) etymPanel.style.display = 'none';
+      if (mnemoPanel.style.display === 'block') { mnemoPanel.style.display = 'none'; return; }
+      renderCardMnemo(viewType);
+    }
+  }
+
+  function renderCardMnemo(viewType) {
+    let curWord = null;
+    if (viewType === 'speed' && speedList[speedIdx]) curWord = speedList[speedIdx].word;
+    else if (viewType === 'write' && writeList[writeIdx]) curWord = writeList[writeIdx].word;
+    if (!curWord) return;
+
+    const mnemoPanel = document.getElementById(`${viewType}-mnemo-panel`);
+    const mData = getMasterMnemonics(curWord);
+    const pair = mData.sets[cardMnemoIndex % mData.sets.length];
+
+    mnemoPanel.innerHTML = `
+      <div class="mnemo-head-bar">
+        <div class="mnemo-phonetic-title">
+          🧠 ${curWord.es} <span class="mnemo-phonetic-badge">[${mData.pron}]</span> — ${curWord.ko}
+        </div>
+        <button class="btn-mnemo-cycle" onclick="cardMnemoIndex++; renderCardMnemo('${viewType}')">
+          🔄 다른 연상 (${(cardMnemoIndex % mData.sets.length) + 1}/${mData.sets.length})
+        </button>
+      </div>
+      <div class="mnemo-story-card">• ${pair[0]}</div>
+      <div class="mnemo-story-card" style="margin-bottom:0;">• ${pair[1]}</div>
+    `;
+    mnemoPanel.style.display = 'block';
+  }
+
+  function hideAllCardPanels() {
+    ['speed', 'write'].forEach(v => {
+      const e = document.getElementById(`${v}-etym-panel`);
+      const m = document.getElementById(`${v}-mnemo-panel`);
+      const a = document.getElementById(`${v}-ans-panel`);
+      if (e) e.style.display = 'none';
+      if (m) m.style.display = 'none';
+      if (a) a.style.display = 'none';
+    });
+  }
+
+  // ================= [1. ⚡ 스피드 퀴즈 (편법 방지 가림막 탑재)] =================
+  let speedList = []; let speedIdx = 0; let speedAnswered = false; let speedBonusChecked = false;
+
+  function initSpeedQuiz() {
+    const curWords = VOCAB_DATABASE[currentRoundNum].words;
+    const q1 = curWords.map(w => ({ word: w, dir: 'ko-to-es' }));
+    const q2 = curWords.map(w => ({ word: w, dir: 'es-to-ko' }));
+    speedList = shuffle([...q1, ...q2]);
+    speedIdx = 0; renderSpeedQuestion();
+  }
+
+  function renderSpeedQuestion() {
+    speedAnswered = false; speedBonusChecked = false; hideAllCardPanels();
+    const cur = speedList[speedIdx];
+    document.getElementById('speed-ptext').innerText = `${speedIdx + 1}/${speedList.length}`;
+    document.getElementById('speed-pbar').style.width = `${(speedIdx / speedList.length) * 100}%`;
+
+    const badge = document.getElementById('speed-badge'); const prompt = document.getElementById('speed-prompt-word');
+    const ttsWrap = document.getElementById('speed-tts-wrap'); const container = document.getElementById('speed-choices');
+    const banner = document.getElementById('speed-feedback'); const actionGroup = document.getElementById('speed-action-group');
+    const bonusWrap = document.getElementById('speed-spelling-bonus-wrap');
+
+    banner.style.display = 'none'; 
+    actionGroup.style.display = 'none'; 
+    bonusWrap.style.display = 'none';
+    container.innerHTML = '';
+    document.getElementById('speed-bonus-input').value = '';
+    document.getElementById('speed-bonus-feedback').style.display = 'none';
+
+    const pool = VOCAB_DATABASE[currentRoundNum].words.filter(w => w.id !== cur.word.id);
+    const choices = shuffle([cur.word, ...shuffle(pool).slice(0, 3)]);
+
+    if (cur.dir === 'ko-to-es') {
+      badge.innerText = `스피드 퀴즈 (한➔스)`; badge.className = 'question-badge';
+      prompt.innerText = cur.word.ko; ttsWrap.style.display = 'none';
+      choices.forEach((c, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.dataset.text = c.es;
+        btn.dataset.id = c.id;
+        btn.innerHTML = `
+          <div class="choice-left-wrap">
+            <span class="choice-num-badge">${idx + 1}</span>
+            <span class="choice-text-val">${c.es}</span>
+          </div>
+          <span class="choice-tag-hint">선택</span>
+        `;
+        btn.onclick = () => onSelectSpeedChoice(btn, c.id === cur.word.id, cur.word, 'es');
+        container.appendChild(btn);
+      });
+    } else {
+      badge.innerText = `스피드 퀴즈 (스➔한)`; badge.className = 'question-badge korean-target';
+      prompt.innerText = cur.word.es; ttsWrap.style.display = 'block';
+      document.getElementById('speed-tts-btn').onclick = () => playTTS(cur.word.es);
+      choices.forEach((c, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.dataset.text = c.ko;
+        btn.dataset.id = c.id;
+        btn.innerHTML = `
+          <div class="choice-left-wrap">
+            <span class="choice-num-badge">${idx + 1}</span>
+            <span class="choice-text-val">${c.ko}</span>
+          </div>
+          <span class="choice-tag-hint">선택</span>
+        `;
+        btn.onclick = () => onSelectSpeedChoice(btn, c.id === cur.word.id, cur.word, 'ko');
+        container.appendChild(btn);
+      });
+    }
+  }
+
+  function onSelectSpeedChoice(btn, isCorrect, wordObj, targetLang) {
+    if (speedAnswered) return; speedAnswered = true; playTTS(wordObj.es);
+    // 편법 방지: 보너스 철자 테스트 시작 시 열려 있던 어원/연상법/정답확인 창을 닫아 커닝 차단
+    hideAllCardPanels();
+    btn.classList.add(isCorrect ? 'selected-correct' : 'selected-wrong');
+    
+    const cur = speedList[speedIdx];
+    const maskedSpanishHtml = `<span class="maskable-text mask-es is-masked speed-masked-target" onclick="unmaskIndividual(this, event)" title="터치하여 확인">${wordObj.es}</span>`;
+
+    // 1~4번 보기 중 정답 보기의 스페인어 철자도 하얀색 가림막 박스로 가려줌 (보고 베끼기 방지)
+    document.querySelectorAll('#speed-choices .choice-btn').forEach(b => {
+      b.style.pointerEvents = 'none';
+      if (b.dataset.id == wordObj.id) {
+        b.classList.add('selected-correct');
+        if (targetLang === 'es') {
+          const textSpan = b.querySelector('.choice-text-val');
+          if (textSpan) textSpan.innerHTML = maskedSpanishHtml;
+        }
+      }
+    });
+
+    // 스➔한 문제일 경우 상단 문제 단어의 스페인어도 가려줌
+    if (cur.dir === 'es-to-ko') {
+      document.getElementById('speed-prompt-word').innerHTML = maskedSpanishHtml;
+    }
+
+    const banner = document.getElementById('speed-feedback');
+    const chkHtml = getFocusCheckboxHtml(wordObj);
+
+    banner.className = `feedback-banner ${isCorrect ? 'correct' : 'wrong'}`;
+    banner.innerHTML = `
+      <div class="feedback-content-wrap">
+        <div class="feedback-text-area">
+          ${isCorrect ? `⭕ 정답입니다! 🎉<br>${maskedSpanishHtml} = <strong>${wordObj.ko}</strong>` : `❌ 오답입니다!<br>정답: <strong>${targetLang === 'es' ? maskedSpanishHtml : wordObj.ko}</strong>`}
+        </div>
+        ${chkHtml}
+      </div>
+    `;
+    banner.style.display = 'block';
+
+    const bonusWrap = document.getElementById('speed-spelling-bonus-wrap');
+    bonusWrap.style.display = 'block';
+    const bonusInput = document.getElementById('speed-bonus-input');
+    bonusInput.value = '';
+    bonusInput.className = 'input-box';
+    document.getElementById('speed-bonus-feedback').style.display = 'none';
+
+    document.getElementById('speed-action-group').style.display = 'flex';
+  }
+
+  function checkSpeedBonusSpelling() {
+    const cur = speedList[speedIdx];
+    const input = document.getElementById('speed-bonus-input');
+    const val = input.value.trim().toLowerCase();
+    const fb = document.getElementById('speed-bonus-feedback');
+    if (!val) { input.focus(); return; }
+
+    const valids = cur.word.alt.map(s => s.toLowerCase());
+    const isCorrect = valids.includes(val);
+    const strip = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const missingTilde = !isCorrect && valids.some(ans => strip(ans) === strip(val));
+
+    speedBonusChecked = true;
+    playTTS(cur.word.es);
+
+    if (isCorrect) {
+      input.classList.add('correct-input');
+      fb.style.display = 'block';
+      fb.style.color = 'var(--success)';
+      fb.innerHTML = `🎉 완벽합니다! 철자 정답: <strong>${cur.word.es}</strong>`;
+      document.querySelectorAll('.speed-masked-target').forEach(el => el.classList.remove('is-masked'));
+    } else {
+      input.classList.add('wrong-input');
+      fb.style.display = 'block';
+      fb.style.color = 'var(--danger)';
+      const tMsg = missingTilde ? '⚠️ 띨데(강세) 누락! ' : '';
+      fb.innerHTML = `❌ ${tMsg}정답: <strong>${cur.word.es}</strong>`;
+    }
+  }
+
+  function retryCurrentSpeed() {
+    speedAnswered = false; speedBonusChecked = false;
+    document.getElementById('speed-feedback').style.display = 'none';
+    document.getElementById('speed-spelling-bonus-wrap').style.display = 'none';
+    document.getElementById('speed-action-group').style.display = 'none';
+
+    const cur = speedList[speedIdx];
+    if (cur.dir === 'es-to-ko') {
+      document.getElementById('speed-prompt-word').innerText = cur.word.es;
+    }
+
+    document.querySelectorAll('#speed-choices .choice-btn').forEach(b => {
+      b.className = 'choice-btn';
+      b.style.pointerEvents = 'auto';
+      const textSpan = b.querySelector('.choice-text-val');
+      if (textSpan && b.dataset.text) textSpan.innerText = b.dataset.text;
+    });
+  }
+
+  function prevSpeedQuestion() {
+    if (speedIdx > 0) { speedIdx--; renderSpeedQuestion(); } else { alert('첫 번째 단어입니다.'); }
+  }
+
+  function nextSpeedQuestion() {
+    speedIdx = (speedIdx + 1) % speedList.length;
+    renderSpeedQuestion();
+  }
+
+  // ================= [2. ✍️ 철자 연습] =================
+  let writeList = []; let writeIdx = 0; let writeChecked = false;
+
+  function initWriteQuiz() {
+    const curWords = VOCAB_DATABASE[currentRoundNum].words;
+    const q1 = curWords.map(w => ({ word: w, dir: 'ko-to-es' }));
+    const q2 = curWords.map(w => ({ word: w, dir: 'es-to-ko' }));
+    writeList = shuffle([...q1, ...q2]);
+    writeIdx = 0; writeChecked = false; renderWriteQuestion();
+  }
+
+  function renderWriteQuestion() {
+    writeChecked = false; hideAllCardPanels();
+    const cur = writeList[writeIdx];
+    document.getElementById('write-ptext').innerText = `${writeIdx + 1}/${writeList.length}`;
+    document.getElementById('write-pbar').style.width = `${(writeIdx / writeList.length) * 100}%`;
+
+    const badge = document.getElementById('write-badge'); const prompt = document.getElementById('write-prompt-word');
+    const ttsWrap = document.getElementById('write-tts-wrap'); const input = document.getElementById('write-input');
+    const tildeBar = document.getElementById('write-tilde-bar');
+
+    document.getElementById('write-feedback').style.display = 'none';
+    document.getElementById('write-action-group').style.display = 'none';
+    document.getElementById('write-init-btn-wrap').style.display = 'block';
+
+    input.value = ''; input.disabled = false; input.className = 'input-box';
+
+    if (cur.dir === 'ko-to-es') {
+      badge.innerText = `철자 쓰기 (한➔스)`; badge.className = 'question-badge';
+      prompt.innerText = cur.word.ko; ttsWrap.style.display = 'none'; tildeBar.style.display = 'flex';
+      input.placeholder = "스페인어 철자 입력 (1~7로 띨데 입력 가능)";
+    } else {
+      badge.innerText = `한국어 뜻 쓰기 (스➔한)`; badge.className = 'question-badge korean-target';
+      prompt.innerText = cur.word.es; ttsWrap.style.display = 'block';
+      document.getElementById('write-tts-btn').onclick = () => playTTS(cur.word.es);
+      tildeBar.style.display = 'none'; input.placeholder = "한국어 뜻 입력";
+    }
+    input.focus();
+  }
+
+  function handleWriteAction() {
+    const cur = writeList[writeIdx]; const input = document.getElementById('write-input'); const val = input.value.trim();
+    if (!val) { input.focus(); return; }
+
+    writeChecked = true; input.disabled = true;
+    let isCorrect = false; let missingTilde = false;
+
+    if (cur.dir === 'ko-to-es') {
+      const userLower = val.toLowerCase();
+      const valids = cur.word.alt.map(s => s.toLowerCase());
+      isCorrect = valids.includes(userLower);
+      const strip = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      missingTilde = !isCorrect && valids.some(ans => strip(ans) === strip(userLower));
+      playTTS(cur.word.es);
+    } else {
+      isCorrect = isKoreanCorrect(val, cur.word); playTTS(cur.word.es);
+    }
+
+    const banner = document.getElementById('write-feedback');
+    const chkHtml = getFocusCheckboxHtml(cur.word);
+    let tMsg = missingTilde ? '⚠️ 띨데(강세 부호)가 누락되었습니다!<br>' : '';
+    let targetText = (cur.dir === 'ko-to-es') ? cur.word.es : cur.word.ko;
+
+    if (isCorrect) {
+      input.classList.add('correct-input'); banner.className = 'feedback-banner correct';
+      banner.innerHTML = `
+        <div class="feedback-content-wrap">
+          <div class="feedback-text-area">⭕ 정답입니다! 🎉<br><strong>${cur.word.es}</strong> = <strong>${cur.word.ko}</strong></div>
+          ${chkHtml}
+        </div>
+      `;
+    } else {
+      input.classList.add('wrong-input'); banner.className = 'feedback-banner wrong';
+      banner.innerHTML = `
+        <div class="feedback-content-wrap">
+          <div class="feedback-text-area">❌ 오답입니다!<br>${tMsg}정답: <strong>${targetText}</strong></div>
+          ${chkHtml}
+        </div>
+      `;
+    }
+    banner.style.display = 'block';
+    document.getElementById('write-init-btn-wrap').style.display = 'none';
+    document.getElementById('write-action-group').style.display = 'flex';
+  }
+
+  function retryCurrentWrite() {
+    writeChecked = false;
+    const input = document.getElementById('write-input');
+    input.value = ''; input.disabled = false; input.className = 'input-box';
+    document.getElementById('write-feedback').style.display = 'none';
+    document.getElementById('write-action-group').style.display = 'none';
+    document.getElementById('write-init-btn-wrap').style.display = 'block';
+    input.focus();
+  }
+
+  function prevWriteQuestion() {
+    if (writeIdx > 0) { writeIdx--; renderWriteQuestion(); } else { alert('첫 번째 단어입니다.'); }
+  }
+
+  function nextWriteQuestion() {
+    writeIdx = (writeIdx + 1) % writeList.length;
+    renderWriteQuestion();
+  }
+
+  // ================= [3. 📋 단어장 & 가림막] =================
+  let isEsMasked = false; let isKoMasked = false;
+  function toggleMaskAll(lang) {
+    if (lang === 'es') {
+      isEsMasked = !isEsMasked;
+      const btn = document.getElementById('btn-mask-es');
+      btn.classList.toggle('active-mask', isEsMasked);
+      btn.innerHTML = isEsMasked ? '👁️ 스페인어 보이기' : '🙈 스페인어 가리기';
+      document.querySelectorAll('#vocab-list-container .mask-es').forEach(el => {
+        if (isEsMasked) el.classList.add('is-masked'); else el.classList.remove('is-masked');
+      });
+    } else {
+      isKoMasked = !isKoMasked;
+      const btn = document.getElementById('btn-mask-ko');
+      btn.classList.toggle('active-mask', isKoMasked);
+      btn.innerHTML = isKoMasked ? '👁️ 한국어 보이기' : '🙈 한국어 가리기';
+      document.querySelectorAll('#vocab-list-container .mask-ko').forEach(el => {
+        if (isKoMasked) el.classList.add('is-masked'); else el.classList.remove('is-masked');
+      });
+    }
+  }
+
+  function unmaskIndividual(el, ev) {
+    if (ev) ev.stopPropagation();
+    if (el.classList.contains('is-masked')) el.classList.remove('is-masked');
+  }
+
+  function renderVocabList() {
+    const curData = VOCAB_DATABASE[currentRoundNum];
+    document.getElementById('list-round-title').innerText = `${curData.title} (${curData.words.length}단어)`;
+    
+    const btnEs = document.getElementById('btn-mask-es');
+    const btnKo = document.getElementById('btn-mask-ko');
+    if (btnEs) { btnEs.classList.toggle('active-mask', isEsMasked); btnEs.innerHTML = isEsMasked ? '👁️ 스페인어 보이기' : '🙈 스페인어 가리기'; }
+    if (btnKo) { btnKo.classList.toggle('active-mask', isKoMasked); btnKo.innerHTML = isKoMasked ? '👁️ 한국어 보이기' : '🙈 한국어 가리기'; }
+
+    const container = document.getElementById('vocab-list-container');
+    container.innerHTML = '';
+    const esMaskClass = isEsMasked ? 'is-masked' : '';
+    const koMaskClass = isKoMasked ? 'is-masked' : '';
+
+    curData.words.forEach((v, idx) => {
+      const div = document.createElement('div');
+      div.className = 'vocab-item';
+      div.innerHTML = `
+        <div class="vocab-item-left">
+          <button class="mini-speaker" onclick="playTTS('${v.es}')" title="발음 듣기">🔊</button>
+          <span style="font-weight:800; color:var(--text-sub); font-size:0.9rem; min-width:20px;">${idx + 1}.</span>
+          <span class="vocab-es maskable-text mask-es ${esMaskClass}" onclick="unmaskIndividual(this, event)">${v.es}</span>
+        </div>
+        <div class="vocab-ko">
+          <span class="maskable-text mask-ko ${koMaskClass}" onclick="unmaskIndividual(this, event)">${v.ko}</span>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  // ================= [4. 📁 집중공부 뷰] =================
+  let isFocusEsMasked = false; let isFocusKoMasked = false;
+  function toggleFocusMaskAll(lang) {
+    if (lang === 'es') {
+      isFocusEsMasked = !isFocusEsMasked;
+      const btn = document.getElementById('btn-mask-focus-es');
+      btn.classList.toggle('active-mask', isFocusEsMasked);
+      btn.innerHTML = isFocusEsMasked ? '👁️ 스페인어 보이기' : '🙈 스페인어 가리기';
+      document.querySelectorAll('#focus-list-container .mask-es').forEach(el => {
+        if (isFocusEsMasked) el.classList.add('is-masked'); else el.classList.remove('is-masked');
+      });
+    } else {
+      isFocusKoMasked = !isFocusKoMasked;
+      const btn = document.getElementById('btn-mask-focus-ko');
+      btn.classList.toggle('active-mask', isFocusKoMasked);
+      btn.innerHTML = isFocusKoMasked ? '👁️ 한국어 보이기' : '🙈 한국어 가리기';
+      document.querySelectorAll('#focus-list-container .mask-ko').forEach(el => {
+        if (isFocusKoMasked) el.classList.add('is-masked'); else el.classList.remove('is-masked');
+      });
+    }
+  }
+
+  function renderFocusList() {
+    updateFocusCountBadge();
+    const container = document.getElementById('focus-list-container');
+    container.innerHTML = '';
+
+    if (focusWordIds.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 40px 10px; color: var(--text-sub);">
+          <div style="font-size: 2.5rem; margin-bottom: 8px;">📂</div>
+          <p style="font-weight: 800; font-size: 1rem; color: #334155;">집중공부 폴더가 비어 있습니다.</p>
+          <p style="font-size: 0.82rem; margin-top: 4px;">스피드, 철자 퀴즈나 시험 중 헷갈리는 단어에서<br><b>[집중공부로 이동 (C)]</b> 체크박스를 눌러보세요!</p>
+        </div>
+      `;
+      return;
+    }
+
+    const esMaskClass = isFocusEsMasked ? 'is-masked' : '';
+    const koMaskClass = isFocusKoMasked ? 'is-masked' : '';
+
+    focusWordIds.forEach(id => {
+      const v = ALL_WORDS_MAP[id];
+      if (!v) return;
+      const div = document.createElement('div');
+      div.className = 'vocab-item';
+      div.innerHTML = `
+        <div class="vocab-item-left">
+          <button class="mini-speaker" onclick="playTTS('${v.es}')">🔊</button>
+          <span style="font-size:0.72rem; font-weight:800; color:var(--primary); background:#e0e7ff; padding:2px 6px; border-radius:6px;">${v.round}회차</span>
+          <span class="vocab-es maskable-text mask-es ${esMaskClass}" onclick="unmaskIndividual(this, event)">${v.es}</span>
+        </div>
+        <div class="vocab-ko" style="display:flex; align-items:center; gap:6px;">
+          <span class="maskable-text mask-ko ${koMaskClass}" onclick="unmaskIndividual(this, event)">${v.ko}</span>
+          <button class="btn-delete-item" onclick="removeFocusWord(${v.id})" title="삭제">🗑️</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  // ================= [5. 🎯 누적 실전 시험 (편법 원천 차단 & 퇴근 판독기)] =================
+  let examQuestions = []; let examCurrentIdx = 0; let examScore = 0; let examReviewScore = 0; let examCurRoundScore = 0; let examWrongList = []; let examStepAnswered = false;
+
+  function resetExamIntro() {
+    document.getElementById('exam-intro-screen').style.display = 'block'; document.getElementById('exam-playing-screen').style.display = 'none'; document.getElementById('exam-result-screen').style.display = 'none';
+    document.getElementById('exam-intro-title').innerText = `${currentRoundNum}회차 누적 실전 시험`;
+    document.getElementById('exam-rule-desc').innerHTML = currentRoundNum === 1 
+      ? `• <b>시험 범위:</b> 1회차 전체 20단어 중 10문제 무작위 출제<br>• <b>출제 구성:</b> 쓰기(한⇄스) + 객관식(한⇄스) 양방향 혼합 출제<br>• <b>배점 및 합격 기준:</b> 문항당 10점 / <b>80점 이상 시 퇴근 가능!</b><br>• ⚠️ <b>편법 방지:</b> 실전 시험 중에는 힌트·이전단어·다시풀기가 금지됩니다.` 
+      : `• <b>1단계 (누적 복습 10문항):</b> 1~${currentRoundNum - 1}회차 누적 전체에서 무작위 10문제 추출<br>• <b>2단계 (금회차 본시험 10문항):</b> ${currentRoundNum}회차 전체에서 무작위 10문제 추출<br>• <b>총 문항 수:</b> 20문항 (문항당 5점 / <b>80점 이상 시 퇴근 가능!</b>)<br>• ⚠️ <b>편법 방지:</b> 실전 시험 중에는 힌트·이전단어·다시풀기가 금지됩니다.`;
+  }
+
+  function startExamSession() {
+    examQuestions = []; examCurrentIdx = 0; examScore = 0; examReviewScore = 0; examCurRoundScore = 0; examWrongList = [];
+    const types = ['ko-to-es-spelling', 'es-to-ko-spelling', 'ko-to-es-choice', 'es-to-ko-choice'];
+
+    if (currentRoundNum > 1) {
+      let prevPool = []; for (let r = 1; r < currentRoundNum; r++) prevPool = prevPool.concat(VOCAB_DATABASE[r].words);
+      shuffle(prevPool).slice(0, 10).forEach((w, i) => examQuestions.push({ word: w, isReview: true, qType: types[i % 4], label: `복습 (1~${currentRoundNum - 1}회차)` }));
+    }
+    shuffle(VOCAB_DATABASE[currentRoundNum].words).slice(0, 10).forEach((w, i) => examQuestions.push({ word: w, isReview: false, qType: types[i % 4], label: `본시험 (${currentRoundNum}회차)` }));
+
+    document.getElementById('exam-intro-screen').style.display = 'none'; document.getElementById('exam-playing-screen').style.display = 'block';
+    renderExamQuestion();
+  }
+
+  function renderExamQuestion() {
+    examStepAnswered = false; hideAllCardPanels();
+    const cur = examQuestions[examCurrentIdx];
+    document.getElementById('exam-ptext').innerText = `${examCurrentIdx + 1}/${examQuestions.length}`;
+    document.getElementById('exam-pbar').style.width = `${(examCurrentIdx / examQuestions.length) * 100}%`;
+
+    const badge = document.getElementById('exam-q-badge'); badge.className = `question-badge ${cur.isReview ? 'review-tag' : ''}`;
+    const prompt = document.getElementById('exam-q-prompt'); const ttsWrap = document.getElementById('exam-tts-wrap');
+    const spellArea = document.getElementById('exam-type-spelling-area'); const choiceArea = document.getElementById('exam-type-choice-area');
+    const input = document.getElementById('exam-input'); const tildeBar = document.getElementById('exam-tilde-bar');
+    
+    document.getElementById('exam-feedback-banner').style.display = 'none'; 
+    document.getElementById('exam-action-group').style.display = 'none';
+    input.value = ''; input.disabled = false; input.className = 'input-box';
+
+    if (cur.qType === 'ko-to-es-spelling') {
+      badge.innerText = `${cur.label} • 🇪🇸 스페인어 쓰기`; prompt.innerText = cur.word.ko; ttsWrap.style.display = 'none';
+      spellArea.style.display = 'block'; choiceArea.style.display = 'none'; tildeBar.style.display = 'flex'; input.placeholder = "스페인어 철자 입력 (1~7로 띨데 입력 가능)"; input.focus();
+    } else if (cur.qType === 'es-to-ko-spelling') {
+      badge.innerText = `${cur.label} • 🇰🇷 한국어 뜻 쓰기`; prompt.innerText = cur.word.es; ttsWrap.style.display = 'block';
+      document.getElementById('exam-audio-btn').onclick = () => playTTS(cur.word.es);
+      spellArea.style.display = 'block'; choiceArea.style.display = 'none'; tildeBar.style.display = 'none'; input.placeholder = "한국어 뜻 입력"; input.focus();
+    } else if (cur.qType === 'ko-to-es-choice') {
+      badge.innerText = `${cur.label} • 🇪🇸 스페인어 고르기`; prompt.innerText = cur.word.ko; ttsWrap.style.display = 'none';
+      spellArea.style.display = 'none'; choiceArea.style.display = 'block'; setupExamChoices('es', cur.word);
+    } else if (cur.qType === 'es-to-ko-choice') {
+      badge.innerText = `${cur.label} • 🇰🇷 한국어 뜻 고르기`; prompt.innerText = cur.word.es; ttsWrap.style.display = 'block';
+      document.getElementById('exam-audio-btn').onclick = () => playTTS(cur.word.es);
+      spellArea.style.display = 'none'; choiceArea.style.display = 'block'; setupExamChoices('ko', cur.word);
+    }
+  }
+
+  function setupExamChoices(targetLang, correctWord) {
+    let allWords = []; Object.keys(VOCAB_DATABASE).forEach(k => allWords = allWords.concat(VOCAB_DATABASE[k].words));
+    const choices = shuffle([correctWord, ...shuffle(allWords.filter(w => w.id !== correctWord.id)).slice(0, 3)]);
+    const container = document.getElementById('exam-choices-container'); container.innerHTML = '';
+    choices.forEach((c, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.innerHTML = `
+        <div class="choice-left-wrap">
+          <span class="choice-num-badge">${idx + 1}</span>
+          <span class="choice-text-val">${targetLang === 'es' ? c.es : c.ko}</span>
+        </div>
+        <span class="choice-tag-hint">선택</span>
+      `;
+      btn.onclick = () => submitExamChoice(btn, c.id === correctWord.id, correctWord, targetLang);
+      container.appendChild(btn);
+    });
+  }
+
+  function submitExamSpelling() {
+    if (examStepAnswered) return;
+    const input = document.getElementById('exam-input'); const val = input.value.trim();
+    if (!val) { input.focus(); return; }
+    const cur = examQuestions[examCurrentIdx]; examStepAnswered = true; input.disabled = true;
+    let isCorrect = false; let missingTilde = false;
+
+    if (cur.qType === 'ko-to-es-spelling') {
+      const valids = cur.word.alt.map(s => s.toLowerCase());
+      isCorrect = valids.includes(val.toLowerCase());
+      const strip = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      missingTilde = !isCorrect && valids.some(ans => strip(ans) === strip(val.toLowerCase()));
+    } else { isCorrect = isKoreanCorrect(val, cur.word); }
+
+    playTTS(cur.word.es); recordExamScore(isCorrect, cur, val, missingTilde);
+    const banner = document.getElementById('exam-feedback-banner');
+    const chkHtml = getFocusCheckboxHtml(cur.word);
+    let tMsg = missingTilde ? '⚠️ 띨데 부호 누락!<br>' : '';
+    let targetText = (cur.qType === 'ko-to-es-spelling') ? cur.word.es : cur.word.ko;
+
+    if (isCorrect) {
+      input.classList.add('correct-input'); banner.className = 'feedback-banner correct';
+      banner.innerHTML = `
+        <div class="feedback-content-wrap">
+          <div class="feedback-text-area">⭕ 정답입니다! <strong>${cur.word.es}</strong> = <strong>${cur.word.ko}</strong></div>
+          ${chkHtml}
+        </div>
+      `;
+    } else {
+      input.classList.add('wrong-input'); banner.className = 'feedback-banner wrong';
+      banner.innerHTML = `
+        <div class="feedback-content-wrap">
+          <div class="feedback-text-area">❌ 오답입니다!<br>${tMsg}정답: <strong>${targetText}</strong></div>
+          ${chkHtml}
+        </div>
+      `;
+    }
+    banner.style.display = 'block'; 
+    document.getElementById('exam-action-group').style.display = 'flex';
+  }
+
+  function submitExamChoice(selectedBtn, isCorrect, correctWord, targetLang) {
+    if (examStepAnswered) return; examStepAnswered = true; playTTS(correctWord.es);
+    const cur = examQuestions[examCurrentIdx]; recordExamScore(isCorrect, cur, selectedBtn.querySelector('.choice-text-val').innerText, false);
+
+    document.querySelectorAll('#exam-choices-container .choice-btn').forEach(btn => {
+      btn.style.pointerEvents = 'none';
+      const expected = (targetLang === 'es') ? correctWord.es : correctWord.ko;
+      if (btn.innerText.includes(expected)) btn.classList.add('selected-correct');
+    });
+
+    const banner = document.getElementById('exam-feedback-banner');
+    const chkHtml = getFocusCheckboxHtml(correctWord);
+    let correctText = (targetLang === 'es') ? correctWord.es : correctWord.ko;
+
+    if (isCorrect) {
+      selectedBtn.classList.add('selected-correct'); banner.className = 'feedback-banner correct';
+      banner.innerHTML = `
+        <div class="feedback-content-wrap">
+          <div class="feedback-text-area">⭕ 정답입니다! (${correctWord.es} = ${correctWord.ko})</div>
+          ${chkHtml}
+        </div>
+      `;
+    } else {
+      selectedBtn.classList.add('selected-wrong'); banner.className = 'feedback-banner wrong';
+      banner.innerHTML = `
+        <div class="feedback-content-wrap">
+          <div class="feedback-text-area">❌ 오답입니다! 정답: <strong>${correctText}</strong></div>
+          ${chkHtml}
+        </div>
+      `;
+    }
+    banner.style.display = 'block'; 
+    document.getElementById('exam-action-group').style.display = 'flex';
+  }
+
+  function recordExamScore(isCorrect, qObj, userAns, missingTilde) {
+    const pts = (currentRoundNum === 1) ? 10 : 5;
+    if (isCorrect) { 
+      examScore += pts; 
+      if (qObj.isReview) examReviewScore += pts; else examCurRoundScore += pts; 
+    } else { 
+      examWrongList.push({ word: qObj.word, label: qObj.label, userAns: userAns, missingTilde: missingTilde }); 
+    }
+  }
+
+  function nextExamQuestion() {
+    examCurrentIdx++;
+    if (examCurrentIdx >= examQuestions.length) showExamFinalResult(); else renderExamQuestion();
+  }
+
+  // ================= [시험 최종 결과 판정: 80점 이상 "퇴근 가능!" / 75점 이하 "퇴근 불가!"] =================
+  function showExamFinalResult() {
+    document.getElementById('exam-playing-screen').style.display = 'none'; 
+    document.getElementById('exam-result-screen').style.display = 'block';
+    document.getElementById('exam-final-score-val').innerText = `${examScore}점`;
+    const gradeEl = document.getElementById('exam-score-grade');
+
+    if (examScore >= 80) {
+      gradeEl.innerHTML = `
+        <div style="display:inline-block; padding:6px 16px; background:#ecfdf5; border:2px solid #10b981; border-radius:24px; color:#065f46; font-size:1.2rem; font-weight:900; margin-bottom:6px; box-shadow:0 2px 6px rgba(16,185,129,0.15);">
+          🎉 칼퇴 확정! [퇴근 가능!]
+        </div>
+        <div style="font-size:0.88rem; color:#059669; font-weight:700;">
+          오늘 분량 완벽 마스터! 가벼운 발걸음으로 즐겁게 퇴근하세요 🏃💨
+        </div>
+      `;
+    } else {
+      gradeEl.innerHTML = `
+        <div style="display:inline-block; padding:6px 16px; background:#fef2f2; border:2px solid #ef4444; border-radius:24px; color:#b91c1c; font-size:1.2rem; font-weight:900; margin-bottom:6px; box-shadow:0 2px 6px rgba(239,68,68,0.15);">
+          🚨 퇴근 불가! (야근 확정... 😭)
+        </div>
+        <div style="font-size:0.88rem; color:#dc2626; font-weight:700;">
+          기준 점수(80점) 미달! 책상 앞에 다시 앉아 오답 노트를 정복하세요 🔥
+        </div>
+      `;
+    }
+
+    if (currentRoundNum === 1) { 
+      document.getElementById('exam-score-review').innerText = "-"; 
+      document.getElementById('exam-score-current').innerText = `${examScore} / 100점`; 
+    } else { 
+      document.getElementById('exam-score-review').innerText = `${examReviewScore} / 50점`; 
+      document.getElementById('exam-score-current').innerText = `${examCurRoundScore} / 50점`; 
+    }
+
+    const wrongBox = document.getElementById('exam-wrong-container'); 
+    wrongBox.innerHTML = '';
+    if (examWrongList.length === 0) {
+      wrongBox.innerHTML = `<p style="text-align:center; color:var(--success); font-weight:800; padding:14px; font-size:0.95rem;">틀린 문제가 하나도 없습니다! 100점 만점! 🏆</p>`;
+    } else {
+      examWrongList.forEach(w => {
+        const chkHtml = getFocusCheckboxHtml(w.word);
+        wrongBox.insertAdjacentHTML('beforeend', `
+          <div class="wrong-item">
+            <div>
+              <span style="font-size:0.7rem; color:#b91c1c; font-weight:700;">[${w.label}]</span>
+              <div style="font-weight:800; color:#0f172a; margin-top:2px;">${w.word.es} <span style="font-weight:500; font-size:0.8rem; color:#64748b;">(${w.word.ko})</span></div>
+              <div style="font-size:0.75rem; color:#991b1b; margin-top:2px;">내 답: ${w.userAns || '(미입력)'} ${w.missingTilde ? '(띨데 누락)' : ''}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              ${chkHtml}
+              <button class="tts-btn" style="margin:0;" onclick="playTTS('${w.word.es}')">🔊</button>
+            </div>
+          </div>
+        `);
+      });
+    }
+  }
+
+  function openShortcutModal() { document.getElementById('shortcut-modal').style.display = 'flex'; }
+  function closeShortcutModal() { document.getElementById('shortcut-modal').style.display = 'none'; }
+
+  // ================= [키보드 단축키 마스터 핸들러] =================
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeShortcutModal();
+      hideAllCardPanels();
+      return;
+    }
+
+    const isTyping = document.activeElement && document.activeElement.tagName === 'INPUT';
+    const isBonusInput = document.activeElement && document.activeElement.id === 'speed-bonus-input';
+    const activeSpeed = document.getElementById('speed-view').classList.contains('active');
+    const activeWrite = document.getElementById('write-view').classList.contains('active');
+    const activeExam = document.getElementById('exam-view').classList.contains('active');
+    const examPlaying = document.getElementById('exam-playing-screen').style.display !== 'none';
+    const examChoiceVisible = document.getElementById('exam-type-choice-area').style.display !== 'none';
+
+    if (isTyping && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const tildeMap = { '1': 'á', '2': 'é', '3': 'í', '4': 'ó', '5': 'ú', '6': 'ñ', '7': '/' };
+      if (tildeMap[e.key]) {
+        e.preventDefault();
+        insertTildeTo(document.activeElement.id, tildeMap[e.key]);
+        return;
+      }
+    }
+
+    // 8번 키: 직전 단어로 넘어가기 (실전 시험에서는 편법 방지로 차단)
+    if (e.key === '8' && !isTyping) {
+      if (activeSpeed) { prevSpeedQuestion(); e.preventDefault(); return; }
+      if (activeWrite) { prevWriteQuestion(); e.preventDefault(); return; }
+    }
+
+    // 9번 키: 다시 풀기 (실전 시험에서는 편법 방지로 차단)
+    if (e.key === '9' && !isTyping) {
+      if (activeSpeed && speedAnswered) { retryCurrentSpeed(); e.preventDefault(); return; }
+      if (activeWrite && writeChecked) { retryCurrentWrite(); e.preventDefault(); return; }
+    }
+
+    if (!isTyping && ['1', '2', '3', '4'].includes(e.key)) {
+      const idx = parseInt(e.key, 10) - 1;
+      if (activeSpeed && !speedAnswered) {
+        const btns = document.querySelectorAll('#speed-choices .choice-btn');
+        if (btns && btns[idx] && btns[idx].style.pointerEvents !== 'none') {
+          btns[idx].click(); e.preventDefault(); return;
+        }
+      } else if (activeExam && examPlaying && examChoiceVisible && !examStepAnswered) {
+        const btns = document.querySelectorAll('#exam-choices-container .choice-btn');
+        if (btns && btns[idx] && btns[idx].style.pointerEvents !== 'none') {
+          btns[idx].click(); e.preventDefault(); return;
+        }
+      }
+    }
+
+    if (e.key === 'Enter') {
+      if (activeSpeed) {
+        if (isBonusInput) {
+          const val = document.getElementById('speed-bonus-input').value.trim();
+          if (val && !speedBonusChecked) {
+            checkSpeedBonusSpelling();
+            e.preventDefault();
+            return;
+          } else {
+            nextSpeedQuestion();
+            e.preventDefault();
+            return;
+          }
+        }
+        if (speedAnswered) { nextSpeedQuestion(); e.preventDefault(); }
+      }
+      else if (activeWrite) {
+        if (writeChecked) { nextWriteQuestion(); e.preventDefault(); }
+        else if (document.activeElement.id === 'write-input') { handleWriteAction(); e.preventDefault(); }
+      } 
+      else if (activeExam && examPlaying) {
+        if (examStepAnswered) { nextExamQuestion(); e.preventDefault(); }
+        else if (document.activeElement.id === 'exam-input') { submitExamSpelling(); e.preventDefault(); }
+      }
+      return;
+    }
+
+    if (!isTyping) {
+      const k = e.key.toLowerCase();
+      if (e.key === '0') {
+        if (activeSpeed && speedList[speedIdx]) playTTS(speedList[speedIdx].word.es);
+        else if (activeWrite && writeList[writeIdx]) playTTS(writeList[writeIdx].word.es);
+        else if (activeExam && examPlaying && examQuestions[examCurrentIdx]) playTTS(examQuestions[examCurrentIdx].word.es);
+        e.preventDefault();
+      }
+      else if (k === 'e') {
+        if (activeSpeed) toggleCardPanel('speed', 'etym');
+        else if (activeWrite) toggleCardPanel('write', 'etym');
+        e.preventDefault();
+      }
+      else if (k === 'm') {
+        cardMnemoIndex++;
+        if (activeSpeed) toggleCardPanel('speed', 'mnemo');
+        else if (activeWrite) toggleCardPanel('write', 'mnemo');
+        e.preventDefault();
+      }
+      else if (k === 'h') {
+        if (activeSpeed) toggleCardPanel('speed', 'ans');
+        else if (activeWrite) toggleCardPanel('write', 'ans');
+        e.preventDefault();
+      }
+      else if (k === 'c') {
+        let curWord = null;
+        if (activeSpeed && speedList[speedIdx]) curWord = speedList[speedIdx].word;
+        else if (activeWrite && writeList[writeIdx]) curWord = writeList[writeIdx].word;
+        else if (activeExam && examPlaying && examQuestions[examCurrentIdx]) curWord = examQuestions[examCurrentIdx].word;
+        if (curWord) {
+          const inFocus = isWordInFocus(curWord.id);
+          toggleFocusWordById(curWord.id, !inFocus);
+        }
+        e.preventDefault();
+      }
+      else if (e.key === '[') { stepRound(-1); e.preventDefault(); }
+      else if (e.key === ']') { stepRound(1); e.preventDefault(); }
+    }
+  });
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view-card').forEach(c => c.classList.remove('active'));
+    
+    const btnList = document.querySelectorAll('.tab-btn');
+    if (tab === 'speed') { btnList[0].classList.add('active'); document.getElementById('speed-view').classList.add('active'); }
+    else if (tab === 'write') { btnList[1].classList.add('active'); document.getElementById('write-view').classList.add('active'); }
+    else if (tab === 'list') { btnList[2].classList.add('active'); document.getElementById('list-view').classList.add('active'); }
+    else if (tab === 'focus') { btnList[3].classList.add('active'); document.getElementById('focus-view').classList.add('active'); renderFocusList(); }
+    else if (tab === 'exam') { btnList[4].classList.add('active'); document.getElementById('exam-view').classList.add('active'); resetExamIntro(); }
+  }
+
+  function initApp() {
+    loadFocusWords();
+    buildRoundSelect();
+    changeRound(1);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
+</script>
+</body>
+</html>
