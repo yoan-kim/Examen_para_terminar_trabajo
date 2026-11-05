@@ -839,20 +839,33 @@ export const ExamView: React.FC<ExamViewProps> = ({
         </div>
       )}
 
-      {/* Etymology Recommended Prompt Button & Box (Directly above Next Question) */}
+      {/* Etymology Recommended Prompt Button & Box (Directly above Next Question / Retake) */}
       <EtymologyPromptBox resetKey={`exam-${currentIdx}`} />
 
-      {stepAnswered && (
+      {/* Bottom Action Bar: Next Question (when answered) + Bottom-Right Instant Retake Button */}
+      <div className="flex items-center justify-end gap-2.5">
+        {stepAnswered && (
+          <button
+            type="button"
+            onClick={handleNextExamQuestion}
+            title="다음 고사 문제로 이동 (단축키: Enter)"
+            className="flex-1 min-h-[50px] py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-base flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>{t.nextQuestionBtn}</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        )}
+
         <button
           type="button"
-          onClick={handleNextExamQuestion}
-          title="다음 고사 문제로 이동 (단축키: Enter)"
-          className="w-full min-h-[50px] py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-base flex items-center justify-center gap-2 cursor-pointer"
+          onClick={startExamSession}
+          title="현재 시험을 처음(1번 문제)부터 새로운 문제로 즉시 다시 시작"
+          className="min-h-[50px] px-4 py-3 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-400 dark:hover:border-rose-700 text-slate-700 dark:text-slate-200 hover:text-rose-700 dark:hover:text-rose-300 font-extrabold text-sm sm:text-base inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0"
         >
-          <span>{t.nextQuestionBtn}</span>
-          <ArrowRight className="w-4 h-4" />
+          <RotateCcw className="w-4 h-4" />
+          <span>재시험</span>
         </button>
-      )}
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 {
-  "summary":  "Implementation plan for the upgraded 600-word Spanish Mastery web application featuring strict Korean/Español single-language modes (including monolingual definitions), removal of etymology and mnemonic buttons, Ecuadorian Spanish (es-EC) pronunciation, Focus Folder quizzes, global search across 30 rounds, and dark mode support.",
-  "updatedAt":  "2026-10-23T13:14:37.403304756Z",
-  "requestFeedback":  true,
-  "userFacing":  true
+  "summary": "오답 노트 팝업 하단 안내 문구 추가 및 실전 시험 진행 중 우측 하단 즉시 리셋 '재시험' 버튼 구현 계획서",
+  "updatedAt": "2026-11-04T02:51:14.765624705Z",
+  "requestFeedback": true,
+  "userFacing": true
 }

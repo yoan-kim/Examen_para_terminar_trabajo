@@ -421,48 +421,54 @@ export const WrongNoteModal: React.FC<WrongNoteModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-4 sm:px-6 py-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0">
-          {subTab === 'list' ? (
-            <div className="w-full sm:w-auto flex items-center gap-2">
+        <div className="px-4 sm:px-6 py-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900 flex flex-col gap-2.5 shrink-0">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+            {subTab === 'list' ? (
+              <div className="w-full sm:w-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSubTab('speed')}
+                  title="오답 단어만 스피드 퀴즈로 다시 풀기"
+                  className="flex-1 sm:flex-initial min-h-[42px] px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span>오답 스피드 다시 학습</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSubTab('write')}
+                  title="오답 단어만 철자 쓰기로 다시 풀기"
+                  className="flex-1 sm:flex-initial min-h-[42px] px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <PenTool className="w-4 h-4" />
+                  <span>오답 철자 다시 학습</span>
+                </button>
+              </div>
+            ) : (
               <button
                 type="button"
-                onClick={() => setSubTab('speed')}
-                title="오답 단어만 스피드 퀴즈로 다시 풀기"
-                className="flex-1 sm:flex-initial min-h-[42px] px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                onClick={() => setSubTab('list')}
+                title="오답 단어 전체 목록으로 돌아가기"
+                className="w-full sm:w-auto min-h-[42px] px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <Zap className="w-4 h-4" />
-                <span>오답 스피드 다시 학습</span>
+                <BookOpen className="w-4 h-4" />
+                <span>오답 단어 목록 보기</span>
               </button>
-              <button
-                type="button"
-                onClick={() => setSubTab('write')}
-                title="오답 단어만 철자 쓰기로 다시 풀기"
-                className="flex-1 sm:flex-initial min-h-[42px] px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <PenTool className="w-4 h-4" />
-                <span>오답 철자 다시 학습</span>
-              </button>
-            </div>
-          ) : (
+            )}
+
             <button
               type="button"
-              onClick={() => setSubTab('list')}
-              title="오답 단어 전체 목록으로 돌아가기"
-              className="w-full sm:w-auto min-h-[42px] px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-1.5 cursor-pointer"
+              onClick={onClose}
+              title="오답 노트 팝업 닫기 (Esc)"
+              className="w-full sm:w-auto min-h-[42px] px-5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs sm:text-sm font-extrabold cursor-pointer"
             >
-              <BookOpen className="w-4 h-4" />
-              <span>오답 단어 목록 보기</span>
+              닫기 (Esc)
             </button>
-          )}
+          </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            title="오답 노트 팝업 닫기 (Esc)"
-            className="w-full sm:w-auto min-h-[42px] px-5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs sm:text-sm font-extrabold cursor-pointer"
-          >
-            닫기 (Esc)
-          </button>
+          <p className="text-center text-xs font-extrabold text-slate-600 dark:text-slate-300 bg-slate-200/70 dark:bg-slate-800/80 py-2 px-3 rounded-lg">
+            💡 오답공부가 필요 없다면 &quot;닫기&quot; 버튼을 누르시면 됩니다
+          </p>
         </div>
       </div>
     </div>
