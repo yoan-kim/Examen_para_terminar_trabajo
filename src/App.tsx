@@ -16,15 +16,21 @@ import {
   FolderHeart,
   Target,
   CheckCircle2,
+  Sparkles,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { AppLanguage, I18N } from './data/i18n';
 import { VOCAB_DATABASE } from './data/vocabData';
 import { initEcuadorTTS } from './utils/tts';
+import { useAdvancedStudy } from './utils/advancedStudy';
+import { useSoundEffects } from './utils/soundEffects';
 import { QuizEngine } from './components/QuizEngine';
 import { VocabListView } from './components/VocabListView';
 import { FocusStudyView } from './components/FocusStudyView';
 import { ExamView } from './components/ExamView';
 import { ShortcutModal } from './components/ShortcutModal';
+import { FireworksOverlay } from './components/FireworksOverlay';
 
 type ActiveTab = 'speed' | 'write' | 'list' | 'focus' | 'exam';
 
@@ -44,7 +50,10 @@ export default function App() {
 
   const [currentRound, setCurrentRound] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<ActiveTab>('speed');
+  const [shuffleSeed, setShuffleSeed] = useState<number>(0);
   const [shortcutOpen, setShortcutOpen] = useState<boolean>(false);
+  const { isAdvancedMode, toggleAdvancedMode } = useAdvancedStudy();
+  const { sfxEnabled, toggleSfx } = useSoundEffects();
 
   // Persisted Focus Study word IDs
   const [focusIds, setFocusIds] = useState<number[]>(() => {
@@ -212,8 +221,26 @@ export default function App() {
             </p>
           </div>
 
-          {/* Right Controls: Theme Toggle, Shortcuts */}
+          {/* Right Controls: Sound Toggle, Theme Toggle, Shortcuts, Advanced Mode */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Sound Effects Toggle */}
+            <button
+              type="button"
+              onClick={toggleSfx}
+              title={
+                sfxEnabled
+                  ? '효과음 켜짐 (클릭하여 효과음 끄기)'
+                  : '효과음 꺼짐 (클릭하여 효과음 켜기)'
+              }
+              className="min-h-[38px] min-w-[38px] p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center cursor-pointer"
+            >
+              {sfxEnabled ? (
+                <Volume2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              ) : (
+                <VolumeX className="w-4 h-4 text-slate-400" />
+              )}
+            </button>
+
             {/* Dark Mode Toggle */}
             <button
               type="button"
@@ -237,6 +264,34 @@ export default function App() {
             >
               <Keyboard className="w-4 h-4" />
               <span>{t.shortcutBtn}</span>
+            </button>
+
+            {/* Advanced Study Feature Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleAdvancedMode}
+              title={
+                isAdvancedMode
+                  ? '고급학습기능 켜짐 (클릭하여 끄기)'
+                  : '고급학습기능 켜기 (단어별 암기팁 노트 기록 기능 활성화)'
+              }
+              className={`min-h-[38px] px-3.5 py-1.5 rounded-xl border text-xs font-extrabold inline-flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer whitespace-nowrap ${
+                isAdvancedMode
+                  ? 'border-indigo-500 bg-slate-900 dark:bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-500/30'
+                  : 'border-slate-800 dark:border-slate-700 bg-slate-900/90 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white'
+              }`}
+            >
+              <Sparkles
+                className={`w-4 h-4 ${
+                  isAdvancedMode ? 'text-amber-300' : 'text-slate-200'
+                }`}
+              />
+              <span>고급학습기능</span>
+              {isAdvancedMode && (
+                <span className="ml-0.5 px-1.5 py-0.5 rounded-md bg-amber-400 text-slate-950 text-[10px] font-black leading-none">
+                  ON
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -346,7 +401,10 @@ export default function App() {
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setShuffleSeed((prev) => prev + 1);
+                  }}
                   title={tab.tooltip}
                   className={`min-h-[42px] px-1.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                     active
@@ -361,6 +419,24 @@ export default function App() {
             })}
           </div>
 
+          {isAdvancedMode && (
+            <div className="rounded-xl bg-slate-900 dark:bg-indigo-950/80 border border-slate-800 dark:border-indigo-700 px-4 py-2.5 flex items-center justify-between gap-2 text-xs font-extrabold text-white">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
+                <span>
+                  고급학습기능 활성화됨 — 각 단어의 정답 확인 후 나만의 &apos;암기팁 노트&apos;를 단어별로 기록할 수 있습니다.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={toggleAdvancedMode}
+                className="px-2 py-0.5 rounded-md bg-white/15 hover:bg-white/25 text-[11px] font-bold shrink-0 cursor-pointer"
+              >
+                끄기
+              </button>
+            </div>
+          )}
+
           {/* Active View Card */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-xs">
             {activeTab === 'speed' && (
@@ -371,6 +447,11 @@ export default function App() {
                 focusIds={focusIds}
                 onToggleFocus={handleToggleFocus}
                 isActiveView={activeTab === 'speed' && !shortcutOpen}
+                shuffleSeed={shuffleSeed}
+                onCompleteAllQuestions={() => {
+                  setActiveTab('write');
+                  setShuffleSeed((prev) => prev + 1);
+                }}
               />
             )}
 
@@ -382,6 +463,10 @@ export default function App() {
                 focusIds={focusIds}
                 onToggleFocus={handleToggleFocus}
                 isActiveView={activeTab === 'write' && !shortcutOpen}
+                shuffleSeed={shuffleSeed}
+                onCompleteAllQuestions={() => {
+                  setShuffleSeed((prev) => prev + 1);
+                }}
               />
             )}
 
@@ -424,6 +509,9 @@ export default function App() {
         onClose={() => setShortcutOpen(false)}
         lang={lang}
       />
+
+      {/* Fireworks Canvas Overlay */}
+      <FireworksOverlay />
     </div>
   );
 }

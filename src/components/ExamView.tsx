@@ -11,6 +11,7 @@ import {
   Award,
   AlertTriangle,
   RotateCcw,
+  Sparkles,
 } from 'lucide-react';
 import { AppLanguage, I18N } from '../data/i18n';
 import {
@@ -22,8 +23,14 @@ import {
   checkMeaningAnswer,
 } from '../data/vocabData';
 import { speakEcuadorSpanish } from '../utils/tts';
+import {
+  playFeedbackAndSpeak,
+  playExamPassApplauseSound,
+} from '../utils/soundEffects';
+import { triggerFireworks } from './FireworksOverlay';
 import { EtymologyPromptBox } from './EtymologyPromptBox';
 import { WrongNoteModal } from './WrongNoteModal';
+import { WordTipNoteBox } from './WordTipNoteBox';
 
 type ExamQuestionType =
   | 'meaning-to-term-write'
@@ -219,7 +226,12 @@ export const ExamView: React.FC<ExamViewProps> = ({
     setStepAnswered(true);
     setStepCorrect(result.isCorrect);
     setStepMissingTilde(result.missingTilde);
-    speakEcuadorSpanish(curQ.word.es);
+    if (result.isCorrect) {
+      playFeedbackAndSpeak('write-correct', curQ.word.es);
+      triggerFireworks('small');
+    } else {
+      playFeedbackAndSpeak('wrong', curQ.word.es);
+    }
     recordAnswer(result.isCorrect, curQ, inputVal.trim(), result.missingTilde);
   }, [curQ, stepAnswered, inputVal, lang, recordAnswer]);
 
@@ -235,7 +247,7 @@ export const ExamView: React.FC<ExamViewProps> = ({
       setStepAnswered(true);
       setStepCorrect(correct);
       setStepMissingTilde(false);
-      speakEcuadorSpanish(curQ.word.es);
+      playFeedbackAndSpeak(correct ? 'speed-correct' : 'wrong', curQ.word.es);
       recordAnswer(correct, curQ, chosenText, false);
     },
     [curQ, stepAnswered, lang, recordAnswer]
@@ -244,8 +256,10 @@ export const ExamView: React.FC<ExamViewProps> = ({
   const handleNextExamQuestion = useCallback(() => {
     if (currentIdx + 1 >= questions.length) {
       setStage('result');
-      if (wrongList.length > 0) {
-        setWrongNoteOpen(true);
+      setWrongNoteOpen(false);
+      if (totalScore >= 80) {
+        playExamPassApplauseSound();
+        triggerFireworks('grand');
       }
     } else {
       setCurrentIdx((prev) => prev + 1);
@@ -255,7 +269,7 @@ export const ExamView: React.FC<ExamViewProps> = ({
       setSelectedChoiceId(null);
       setInputVal('');
     }
-  }, [currentIdx, questions.length, wrongList.length]);
+  }, [currentIdx, questions.length, totalScore]);
 
   // Save best score when entering result screen
   useEffect(() => {
@@ -283,6 +297,9 @@ export const ExamView: React.FC<ExamViewProps> = ({
 
     const onKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
+      if (activeEl && activeEl.tagName === 'TEXTAREA') {
+        return;
+      }
       const isTyping = activeEl && activeEl.tagName === 'INPUT';
       const isChoiceQ = curQ.qType.endsWith('-choice');
 
@@ -466,24 +483,46 @@ export const ExamView: React.FC<ExamViewProps> = ({
           </div>
         </div>
 
+        {/* Recommended Yellow-Sparkling Wrong Note Tab (Optional Click) */}
+        {wrongList.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setWrongNoteOpen(true)}
+            title="클릭하여 실전 시험 오답 노트 팝업 열기 (선택 사항)"
+            className="gold-sparkle-tab w-full p-4 rounded-2xl border-2 bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200 dark:from-amber-950/90 dark:via-yellow-900/60 dark:to-amber-950/90 hover:from-amber-300 hover:via-yellow-200 hover:to-amber-300 text-amber-950 dark:text-amber-100 flex items-center justify-between gap-3 transition-all active:scale-[0.99] cursor-pointer text-left"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-11 h-11 rounded-xl bg-amber-400 dark:bg-amber-500 text-slate-950 flex items-center justify-center shrink-0 shadow-sm">
+                <Sparkles className="w-6 h-6 animate-bounce" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-2 py-0.5 rounded-md bg-amber-500 text-slate-950 text-[11px] font-black tracking-tight">
+                    ★ 추천 학습 탭
+                  </span>
+                  <span className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-amber-100">
+                    📝 실전 시험 오답 노트 열기 ({wrongList.length}문항)
+                  </span>
+                </div>
+                <p className="text-xs font-bold text-amber-900/80 dark:text-amber-200/80 mt-0.5">
+                  틀린 단어만 따로 모아 스피드·철자로 복습해보세요! (필수 아님 · 원할 때만 클릭)
+                </p>
+              </div>
+            </div>
+
+            <div className="px-3.5 py-2 rounded-xl bg-slate-900 dark:bg-amber-400 text-amber-300 dark:text-slate-950 text-xs font-extrabold inline-flex items-center gap-1.5 shrink-0 shadow-xs">
+              <BookOpen className="w-4 h-4" />
+              <span>오답 노트 보기</span>
+            </div>
+          </button>
+        )}
+
         {/* Wrong Answers Review */}
         <div>
           <div className="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
             <h4 className="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-slate-200">
               {t.examWrongNoteTitle}
             </h4>
-
-            {wrongList.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setWrongNoteOpen(true)}
-                title="오답 노트 팝업 열기 및 틀린 단어 다시 학습하기"
-                className="min-h-[36px] px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold inline-flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer"
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>오답 노트 팝업으로 다시 학습 ({wrongList.length})</span>
-              </button>
-            )}
           </div>
 
           <div className="max-h-[38vh] overflow-y-auto flex flex-col gap-2 pr-1">
@@ -566,11 +605,11 @@ export const ExamView: React.FC<ExamViewProps> = ({
             <button
               type="button"
               onClick={() => setWrongNoteOpen(true)}
-              title="틀린 단어만 모아서 오답 노트 팝업에서 다시 학습하기"
-              className="w-full min-h-[50px] py-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-base flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              title="틀린 단어만 모아서 오답 노트 팝업에서 다시 학습하기 (선택 사항)"
+              className="gold-sparkle-tab w-full min-h-[50px] py-3.5 px-4 rounded-xl border-2 bg-amber-300 hover:bg-amber-400 dark:bg-amber-500 dark:hover:bg-amber-400 text-slate-950 font-extrabold text-base flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
-              <BookOpen className="w-4 h-4" />
-              <span>오답 노트 · 다시 학습하기</span>
+              <Sparkles className="w-4 h-4" />
+              <span>✨ 추천: 실전 시험 오답 노트</span>
             </button>
           )}
 
@@ -838,6 +877,9 @@ export const ExamView: React.FC<ExamViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Per-Word Memory Tip Note (shown after answer confirmation when Advanced Study Mode is active) */}
+      {stepAnswered && <WordTipNoteBox word={curQ.word} />}
 
       {/* Etymology Recommended Prompt Button & Box (Directly above Next Question / Retake) */}
       <EtymologyPromptBox resetKey={`exam-${currentIdx}`} />

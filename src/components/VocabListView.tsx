@@ -8,6 +8,7 @@ import {
   getWordDisplay,
 } from '../data/vocabData';
 import { speakEcuadorSpanish } from '../utils/tts';
+import { WordTipNoteBox } from './WordTipNoteBox';
 
 interface VocabListViewProps {
   currentRound: number;
@@ -179,73 +180,77 @@ export const VocabListView: React.FC<VocabListViewProps> = ({
             return (
               <div
                 key={v.id}
-                className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
+                className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex flex-col gap-1"
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <button
-                    type="button"
-                    onClick={() => speakEcuadorSpanish(v.es)}
-                    title={t.listenPronunciationTooltip}
-                    className="w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 cursor-pointer transition-colors"
-                  >
-                    <Volume2 className="w-4 h-4" />
-                  </button>
-
-                  <span className="text-xs font-mono font-extrabold text-slate-400 dark:text-slate-500 tabular-nums shrink-0">
-                    {searchScope === 'all'
-                      ? `${t.roundBadgeText(v.round)} ·`
-                      : `${idx + 1}.`}
-                  </span>
-
-                  {termMasked ? (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <button
                       type="button"
-                      onClick={() =>
-                        setUnmaskedTermIds((prev) => [...prev, v.id])
-                      }
-                      title={t.touchToRevealTooltip}
-                      className="min-h-[30px] min-w-[90px] px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-400 dark:text-slate-500 cursor-pointer"
+                      onClick={() => speakEcuadorSpanish(v.es)}
+                      title={t.listenPronunciationTooltip}
+                      className="w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 cursor-pointer transition-colors"
                     >
-                      {t.touchToReveal}
+                      <Volume2 className="w-4 h-4" />
                     </button>
-                  ) : (
-                    <span className="font-extrabold text-indigo-600 dark:text-indigo-400 text-base break-words">
-                      {disp.term}
-                    </span>
-                  )}
-                </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-2.5 pl-11 sm:pl-0">
-                  {defMasked ? (
+                    <span className="text-xs font-mono font-extrabold text-slate-400 dark:text-slate-500 tabular-nums shrink-0">
+                      {searchScope === 'all'
+                        ? `${t.roundBadgeText(v.round)} ·`
+                        : `${idx + 1}.`}
+                    </span>
+
+                    {termMasked ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setUnmaskedTermIds((prev) => [...prev, v.id])
+                        }
+                        title={t.touchToRevealTooltip}
+                        className="min-h-[30px] min-w-[90px] px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-400 dark:text-slate-500 cursor-pointer"
+                      >
+                        {t.touchToReveal}
+                      </button>
+                    ) : (
+                      <span className="font-extrabold text-indigo-600 dark:text-indigo-400 text-base break-words">
+                        {disp.term}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-end gap-2.5 pl-11 sm:pl-0">
+                    {defMasked ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setUnmaskedDefIds((prev) => [...prev, v.id])
+                        }
+                        title={t.touchToRevealTooltip}
+                        className="min-h-[30px] min-w-[110px] px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-400 dark:text-slate-500 cursor-pointer"
+                      >
+                        {t.touchToReveal}
+                      </button>
+                    ) : (
+                      <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 sm:text-right leading-snug">
+                        {disp.meaning}
+                      </span>
+                    )}
+
                     <button
                       type="button"
-                      onClick={() =>
-                        setUnmaskedDefIds((prev) => [...prev, v.id])
-                      }
-                      title={t.touchToRevealTooltip}
-                      className="min-h-[30px] min-w-[110px] px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-400 dark:text-slate-500 cursor-pointer"
+                      onClick={() => onToggleFocus(v.id)}
+                      title={t.moveToFocusTooltip}
+                      className={`w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 cursor-pointer transition-colors ${
+                        inFocus
+                          ? 'bg-amber-100 dark:bg-amber-950/80 border-amber-400 text-amber-600 dark:text-amber-400'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600'
+                      }`}
                     >
-                      {t.touchToReveal}
+                      <Bookmark className="w-4 h-4 fill-current" />
                     </button>
-                  ) : (
-                    <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 sm:text-right leading-snug">
-                      {disp.meaning}
-                    </span>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => onToggleFocus(v.id)}
-                    title={t.moveToFocusTooltip}
-                    className={`w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 cursor-pointer transition-colors ${
-                      inFocus
-                        ? 'bg-amber-100 dark:bg-amber-950/80 border-amber-400 text-amber-600 dark:text-amber-400'
-                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600'
-                    }`}
-                  >
-                    <Bookmark className="w-4 h-4 fill-current" />
-                  </button>
+                  </div>
                 </div>
+
+                <WordTipNoteBox word={v} compact />
               </div>
             );
           })

@@ -13,6 +13,7 @@ import { AppLanguage, I18N } from '../data/i18n';
 import { ALL_WORDS_MAP, VocabWord, getWordDisplay } from '../data/vocabData';
 import { speakEcuadorSpanish } from '../utils/tts';
 import { QuizEngine } from './QuizEngine';
+import { WordTipNoteBox } from './WordTipNoteBox';
 
 interface FocusStudyViewProps {
   lang: AppLanguage;
@@ -31,6 +32,7 @@ export const FocusStudyView: React.FC<FocusStudyViewProps> = ({
 }) => {
   const t = I18N[lang];
   const [subMode, setSubMode] = useState<'list' | 'speed' | 'write'>('list');
+  const [focusShuffleSeed, setFocusShuffleSeed] = useState(0);
   const [maskTermAll, setMaskTermAll] = useState(false);
   const [maskDefAll, setMaskDefAll] = useState(false);
   const [unmaskedTermIds, setUnmaskedTermIds] = useState<number[]>([]);
@@ -129,7 +131,10 @@ export const FocusStudyView: React.FC<FocusStudyViewProps> = ({
 
           <button
             type="button"
-            onClick={() => setSubMode('speed')}
+            onClick={() => {
+              setSubMode('speed');
+              setFocusShuffleSeed((prev) => prev + 1);
+            }}
             title="저장된 단어로 스피드 퀴즈 풀기"
             className={`min-h-[38px] px-2 py-1.5 rounded-lg text-xs font-extrabold flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap ${
               subMode === 'speed'
@@ -143,7 +148,10 @@ export const FocusStudyView: React.FC<FocusStudyViewProps> = ({
 
           <button
             type="button"
-            onClick={() => setSubMode('write')}
+            onClick={() => {
+              setSubMode('write');
+              setFocusShuffleSeed((prev) => prev + 1);
+            }}
             title="저장된 단어로 철자 연습하기"
             className={`min-h-[38px] px-2 py-1.5 rounded-lg text-xs font-extrabold flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap ${
               subMode === 'write'
@@ -221,67 +229,71 @@ export const FocusStudyView: React.FC<FocusStudyViewProps> = ({
               return (
                 <div
                   key={v.id}
-                  className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
+                  className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex flex-col gap-1"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <button
-                      type="button"
-                      onClick={() => speakEcuadorSpanish(v.es)}
-                      title={t.listenPronunciationTooltip}
-                      className="w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 cursor-pointer"
-                    >
-                      <Volume2 className="w-4 h-4" />
-                    </button>
-
-                    <span className="text-xs font-extrabold text-slate-500 dark:text-slate-400 font-mono tabular-nums shrink-0">
-                      {t.roundBadgeText(v.round)} ·
-                    </span>
-
-                    {termMasked ? (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2.5 min-w-0">
                       <button
                         type="button"
-                        onClick={() =>
-                          setUnmaskedTermIds((prev) => [...prev, v.id])
-                        }
-                        title={t.touchToRevealTooltip}
-                        className="min-h-[30px] min-w-[90px] px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-400 dark:text-slate-500 cursor-pointer"
+                        onClick={() => speakEcuadorSpanish(v.es)}
+                        title={t.listenPronunciationTooltip}
+                        className="w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 cursor-pointer"
                       >
-                        {t.touchToReveal}
+                        <Volume2 className="w-4 h-4" />
                       </button>
-                    ) : (
-                      <span className="font-extrabold text-indigo-600 dark:text-indigo-400 text-base break-words">
-                        {disp.term}
-                      </span>
-                    )}
-                  </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-2.5 pl-11 sm:pl-0">
-                    {defMasked ? (
+                      <span className="text-xs font-extrabold text-slate-500 dark:text-slate-400 font-mono tabular-nums shrink-0">
+                        {t.roundBadgeText(v.round)} ·
+                      </span>
+
+                      {termMasked ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setUnmaskedTermIds((prev) => [...prev, v.id])
+                          }
+                          title={t.touchToRevealTooltip}
+                          className="min-h-[30px] min-w-[90px] px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-400 dark:text-slate-500 cursor-pointer"
+                        >
+                          {t.touchToReveal}
+                        </button>
+                      ) : (
+                        <span className="font-extrabold text-indigo-600 dark:text-indigo-400 text-base break-words">
+                          {disp.term}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between sm:justify-end gap-2.5 pl-11 sm:pl-0">
+                      {defMasked ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setUnmaskedDefIds((prev) => [...prev, v.id])
+                          }
+                          title={t.touchToRevealTooltip}
+                          className="min-h-[30px] min-w-[110px] px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-400 dark:text-slate-500 cursor-pointer"
+                        >
+                          {t.touchToReveal}
+                        </button>
+                      ) : (
+                        <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 sm:text-right leading-snug">
+                          {disp.meaning}
+                        </span>
+                      )}
+
                       <button
                         type="button"
-                        onClick={() =>
-                          setUnmaskedDefIds((prev) => [...prev, v.id])
-                        }
-                        title={t.touchToRevealTooltip}
-                        className="min-h-[30px] min-w-[110px] px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-400 dark:text-slate-500 cursor-pointer"
+                        onClick={() => onToggleFocus(v.id)}
+                        title={t.deleteWordTitle}
+                        className="w-8 h-8 rounded-lg border border-rose-200 dark:border-rose-900/50 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-rose-500 flex items-center justify-center shrink-0 cursor-pointer transition-colors"
                       >
-                        {t.touchToReveal}
+                        <Trash2 className="w-4 h-4" />
                       </button>
-                    ) : (
-                      <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 sm:text-right leading-snug">
-                        {disp.meaning}
-                      </span>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => onToggleFocus(v.id)}
-                      title={t.deleteWordTitle}
-                      className="w-8 h-8 rounded-lg border border-rose-200 dark:border-rose-900/50 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-rose-500 flex items-center justify-center shrink-0 cursor-pointer transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    </div>
                   </div>
+
+                  <WordTipNoteBox word={v} compact />
                 </div>
               );
             })}
@@ -296,6 +308,13 @@ export const FocusStudyView: React.FC<FocusStudyViewProps> = ({
           focusIds={focusIds}
           onToggleFocus={onToggleFocus}
           isActiveView={isActiveView}
+          shuffleSeed={focusShuffleSeed}
+          onCompleteAllQuestions={() => {
+            if (subMode === 'speed') {
+              setSubMode('write');
+            }
+            setFocusShuffleSeed((prev) => prev + 1);
+          }}
         />
       )}
     </div>

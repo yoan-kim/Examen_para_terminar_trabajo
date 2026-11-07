@@ -19,7 +19,10 @@ import {
   checkMeaningAnswer,
 } from '../data/vocabData';
 import { speakEcuadorSpanish } from '../utils/tts';
+import { playFeedbackAndSpeak } from '../utils/soundEffects';
+import { triggerFireworks } from './FireworksOverlay';
 import { EtymologyPromptBox } from './EtymologyPromptBox';
+import { WordTipNoteBox } from './WordTipNoteBox';
 
 export type QuizMode = 'speed' | 'write';
 export type QuestionDirection = 'meaning-to-term' | 'term-to-meaning';
@@ -39,6 +42,8 @@ interface QuizEngineProps {
   focusIds: number[];
   onToggleFocus: (wordId: number) => void;
   isActiveView: boolean;
+  shuffleSeed?: number;
+  onCompleteAllQuestions?: () => void;
 }
 
 function shuffleArray<T>(arr: T[]): T[] {
@@ -61,10 +66,13 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
   focusIds,
   onToggleFocus,
   isActiveView,
+  shuffleSeed = 0,
+  onCompleteAllQuestions,
 }) => {
   const t = I18N[lang];
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
+  const [internalShuffleTick, setInternalShuffleTick] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [missingTilde, setMissingTilde] = useState(false);
@@ -130,7 +138,7 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
     setQuestions(shuffleArray([...forwardQs, ...reverseQs]));
     setCurrentIdx(0);
     resetQuestionState();
-  }, [wordsPool, resetQuestionState]);
+  }, [wordsPool, shuffleSeed, internalShuffleTick, resetQuestionState]);
 
   useEffect(() => {
     if (mode === 'write' && isActiveView && !answered) {
@@ -151,7 +159,10 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
       setAnswered(true);
       setShowAnswerHint(false);
       setTermUnmasked(false);
-      speakEcuadorSpanish(curQ.word.es);
+      playFeedbackAndSpeak(
+        correct ? 'speed-correct' : 'wrong',
+        curQ.word.es
+      );
     },
     [curQ, answered]
   );
@@ -172,7 +183,13 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
     setMissingTilde(result.missingTilde);
     setAnswered(true);
     setShowAnswerHint(false);
-    speakEcuadorSpanish(curQ.word.es);
+
+    if (result.isCorrect) {
+      playFeedbackAndSpeak('write-correct', curQ.word.es);
+      triggerFireworks('small');
+    } else {
+      playFeedbackAndSpeak('wrong', curQ.word.es);
+    }
   }, [curQ, answered, writeInputVal, lang]);
 
   const handleCheckBonusSpelling = useCallback(() => {
@@ -187,15 +204,31 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
     setBonusMissingTilde(result.missingTilde);
     if (result.isCorrect) {
       setTermUnmasked(true);
+      playFeedbackAndSpeak('write-correct', curQ.word.es);
+      triggerFireworks('small');
+    } else {
+      playFeedbackAndSpeak('wrong', curQ.word.es);
     }
-    speakEcuadorSpanish(curQ.word.es);
   }, [curQ, bonusInputVal, lang]);
 
   const handleNextQuestion = useCallback(() => {
     if (questions.length === 0) return;
-    setCurrentIdx((prev) => (prev + 1) % questions.length);
+    if (currentIdx + 1 >= questions.length) {
+      if (onCompleteAllQuestions) {
+        onCompleteAllQuestions();
+      } else {
+        setInternalShuffleTick((prev) => prev + 1);
+      }
+      return;
+    }
+    setCurrentIdx((prev) => prev + 1);
     resetQuestionState();
-  }, [questions.length, resetQuestionState]);
+  }, [
+    questions.length,
+    currentIdx,
+    onCompleteAllQuestions,
+    resetQuestionState,
+  ]);
 
   const handlePrevQuestion = useCallback(() => {
     if (currentIdx > 0) {
@@ -237,9 +270,10 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
 
     const onKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
-      const isTyping =
-        activeEl &&
-        (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+      if (activeEl && activeEl.tagName === 'TEXTAREA') {
+        return;
+      }
+      const isTyping = activeEl && activeEl.tagName === 'INPUT';
       const isBonusFocused = activeEl === bonusInputRef.current;
       const isWriteFocused = activeEl === writeInputRef.current;
 
@@ -555,13 +589,26 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
               }
             }
 
+            const isMaskedTargetChoice =
+              answered && isTargetCorrect && isForward && shouldMaskTerm;
+
             return (
               <button
                 key={choice.id}
                 type="button"
-                disabled={answered}
-                onClick={() => handleSelectChoice(choice)}
-                title={`${idx + 1}번 보기 선택 (단축키: ${idx + 1})`}
+                disabled={answered && !isMaskedTargetChoice}
+                onClick={() => {
+                  if (!answered) {
+                    handleSelectChoice(choice);
+                  } else if (isMaskedTargetChoice) {
+                    setTermUnmasked(true);
+                  }
+                }}
+                title={
+                  isMaskedTargetChoice
+                    ? t.touchToRevealTooltip
+                    : `${idx + 1}번 보기 선택 (단축키: ${idx + 1})`
+                }
                 className={`w-full min-h-[52px] px-4 py-3 rounded-xl border-2 text-left font-bold text-sm sm:text-base flex items-center justify-between gap-3 transition-all cursor-pointer disabled:cursor-default ${btnStyle}`}
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -570,14 +617,14 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
                   >
                     {idx + 1}
                   </span>
-                  {answered && isTargetCorrect && isForward && shouldMaskTerm ? (
+                  {isMaskedTargetChoice ? (
                     <span
                       onClick={(e) => {
                         e.stopPropagation();
                         setTermUnmasked(true);
                       }}
                       title={t.touchToRevealTooltip}
-                      className="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-dashed border-emerald-500 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer"
+                      className="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 border border-dashed border-emerald-500 text-xs font-bold text-emerald-700 dark:text-emerald-300 cursor-pointer transition-colors"
                     >
                       {t.touchToReveal}
                     </span>
@@ -586,7 +633,7 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
                   )}
                 </div>
                 <span className="text-xs font-semibold opacity-50 shrink-0">
-                  {t.choiceSelectHint}
+                  {isMaskedTargetChoice ? '클릭하여 정답 보기' : t.choiceSelectHint}
                 </span>
               </button>
             );
@@ -795,6 +842,9 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
           )}
         </div>
       )}
+
+      {/* Per-Word Memory Tip Note (shown after answer confirmation when Advanced Study Mode is active) */}
+      {(answered || showAnswerHint) && <WordTipNoteBox word={curQ.word} />}
 
       {/* Etymology Recommended Prompt Button & Box (Directly above Retry & Next) */}
       <EtymologyPromptBox resetKey={`${mode}-${currentIdx}`} />

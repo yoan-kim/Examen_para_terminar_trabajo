@@ -16,6 +16,7 @@ import { AppLanguage, I18N } from '../data/i18n';
 import { VocabWord, getWordDisplay } from '../data/vocabData';
 import { speakEcuadorSpanish } from '../utils/tts';
 import { QuizEngine } from './QuizEngine';
+import { WordTipNoteBox } from './WordTipNoteBox';
 
 export interface WrongRecordItem {
   word: VocabWord;
@@ -281,7 +282,7 @@ export const WrongNoteModal: React.FC<WrongNoteModalProps> = ({
                 return (
                   <div
                     key={`${w.word.id}-${idx}`}
-                    className="p-3.5 sm:p-4 rounded-xl bg-rose-50/70 dark:bg-rose-950/25 border border-rose-200 dark:border-rose-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    className="p-3.5 sm:p-4 rounded-xl bg-rose-50/70 dark:bg-rose-950/25 border border-rose-200 dark:border-rose-900/60 flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-3"
                   >
                     <div className="space-y-1.5 text-left min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -390,6 +391,10 @@ export const WrongNoteModal: React.FC<WrongNoteModalProps> = ({
                           </>
                         )}
                       </button>
+                    </div>
+
+                    <div className="w-full sm:basis-full">
+                      <WordTipNoteBox word={w.word} compact />
                     </div>
                   </div>
                 );
