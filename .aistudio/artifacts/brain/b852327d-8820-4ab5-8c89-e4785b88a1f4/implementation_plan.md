@@ -1,46 +1,45 @@
-# GitHub Pages 403 권한 거부(Permission Denied) 해결 및 이중 배포 지원 계획
+# GitHub 공식 표준 Pages 배포 워크플로 및 Vite Base 경로 구성 계획
 
-`peaceiris/actions-gh-pages@v4`가 `gh-pages` 브랜치에 푸시할 때 발생한 **`403 Permission denied to github-actions[bot]`** 에러를 해결하기 위해, 워크플로에 명시적 쓰기 권한(`contents: write`)을 부여하고, 동시에 GitHub Actions 없이도 `main` 브랜치에서 즉시 배포할 수 있는 **`/docs` 프로덕션 빌드 폴더**까지 함께 생성합니다.
+GitHub 저장소의 **Settings > Pages > Source**가 **`GitHub Actions`**로 설정된 환경에 맞춰, 403 권한 에러를 유발하던 외부 액션(`peaceiris/actions-gh-pages`)과 불필요한 `/docs` 폴더를 제거하고 **GitHub 공식 표준 아티팩트 배포 워크플로(`.github/workflows/deploy.yml`)**와 **`/Examen_para_terminar_trabajo/` 전용 base 경로**를 적용합니다.
 
 ### User Review & Critical Decisions
 
 > [!IMPORTANT]
-> 사용자 선택에 따라 아래 두 가지 해결책을 모두 적용합니다.
+> 요청하신 5가지 필수 조건과 사용자 확인 사항을 100% 반영한 구성입니다.
 
-- **해결책 1 — 워크플로 쓰기 권한(`contents: write`) 명시**: `.github/workflows/deploy.yml` 최상단 및 Job 레벨에 `permissions: contents: write`를 부여하여 `github-actions[bot]`이 `gh-pages` 브랜치에 403 에러 없이 커밋·푸시할 수 있도록 수정합니다.
-- **해결책 2 — `/docs` 폴더에 완성된 빌드 결과물 직접 포함**: 프로젝트를 미리 빌드하여 `/docs` 폴더(`index.html`, 컴파일된 JS/CSS 번들, `.nojekyll`)를 저장소에 함께 포함시킵니다. 만약 GitHub 저장소에서 Actions를 아예 끄고 `Deploy from a branch (main / docs)`를 선택하더라도 1초 만에 바로 사이트가 열립니다.
+- **공식 GitHub Pages 액션 3종 적용**: `actions/configure-pages@v5`, `actions/upload-pages-artifact@v3`, `actions/deploy-pages@v4`를 사용하여 `./dist` 빌드 결과물을 아티팩트로 직접 배포합니다.
+- **최상단 권한 명시**: `permissions: contents: read, pages: write, id-token: write`를 워크플로 최상단에 명시하여 403 권한 에러를 원천 차단합니다.
+- **Node.js 20 설정**: `actions/setup-node@v4`에서 `node-version: '20'`을 사용합니다.
+- **저장소 맞춤형 `base` 경로 자동 분기 (확정)**: GitHub Actions 빌드 환경(`process.env.GITHUB_ACTIONS === 'true'`)에서는 `base: '/Examen_para_terminar_trabajo/'`가 자동 적용되어 GitHub Pages에서 빈 화면 없이 로드되고, AI 스튜디오 개발/미리보기 환경에서는 `'/'`로 동작하여 양쪽 모두 완벽히 호환됩니다.
 
 ---
 
 ### 1. Overview & Core Concept
 
-- **Why the 403 Error Happened**:
-  - GitHub의 기본 보안 설정상 `GITHUB_TOKEN`(`github-actions[bot]`)은 저장소 읽기 권한(`contents: read`)만 가지며, `gh-pages` 브랜치에 새 커밋을 푸시(`git push origin gh-pages`)하려면 반드시 **`contents: write`** 권한이 필요합니다.
-- **What This Fix Delivers**:
-  1. 워크플로 파일(`.github/workflows/deploy.yml`)에 `contents: write`, `pages: write`, `id-token: write` 권한을 모두 부여하고, `peaceiris/actions-gh-pages@v4`와 공식 GitHub Pages 배포가 모두 권한 에러 없이 통과하도록 구성합니다.
-  2. 빌드 스크립트 실행 시 `dist`뿐만 아니라 `/docs` 폴더에도 최신 프로덕션 빌드 파일을 생성하여, 브랜치 직접 배포(`main` ➔ `/docs` 또는 `gh-pages` ➔ `/root`) 어느 쪽을 선택하든 즉시 작동하게 만듭니다.
+- **What It Does**:
+  1. `.github/workflows/deploy.yml`을 GitHub 공식 정적 웹앱 아티팩트 배포 방식(단일 워크플로 파일)으로 교체합니다.
+  2. 이전에 생성했던 `/docs` 정적 폴더를 깨끗하게 삭제하여 불필요한 브랜치/폴더 충돌을 방지합니다.
+  3. `vite.config.ts`에 GitHub 저장소 이름(`/Examen_para_terminar_trabajo/`) 기준의 `base` 경로 설정을 반영합니다.
 
 ---
 
 ### 2. User Experience & Visual Design
 
-- **Key User Flows (GitHub에서 확인하실 2가지 방법 중 택1)**:
-  - **방법 A (기존처럼 `gh-pages` 브랜치로 자동 배포할 때)**:
-    1. 코드 푸시 시 `.github/workflows/deploy.yml`의 `contents: write` 권한으로 `gh-pages` 브랜치가 자동 생성·업데이트됩니다.
-    2. 만약 GitHub 저장소 자체 설정에서 쓰기 권한이 잠겨 있다면: **[Settings] ➔ [Actions] ➔ [General]** 하단의 **Workflow permissions**에서 **`Read and write permissions`**를 체크하고 Save를 누르면 403 에러가 100% 사라집니다.
-  - **방법 B (Actions를 아예 쓰지 않고 바로 배포할 때)**:
-    1. **[Settings] ➔ [Pages]**에서 **Source**를 `Deploy from a branch`로 두고, Branch를 **`main` / `/docs`**로 선택 후 Save를 누르면 Actions 실행 없이도 즉시 배포가 완료됩니다.
+- **Key User Flows**:
+  1. 프로젝트가 `main` 브랜치에 Push되면 GitHub Actions가 자동으로 `./dist` 폴더를 빌드합니다.
+  2. `actions/upload-pages-artifact@v3`가 `./dist`를 패키징하고, `actions/deploy-pages@v4`가 `gh-pages` 브랜치 푸시 없이 GitHub Pages 서버로 직접 배포합니다.
+  3. 배포가 끝나면 `https://yoan-kim.github.io/Examen_para_terminar_trabajo/` 주소에서 모든 기능(발음, 효과음, 폭죽, 오답노트, 고급학습 암기팁)이 정상 작동합니다.
 
 ---
 
 ### 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: `contents: write` 권한 + `peaceiris/actions-gh-pages@v4` 호환 구성**
-  - *Chosen Approach*: 워크플로에 `permissions: contents: write`를 명시하여 `github-actions[bot]`에게 브랜치 푸시 권한을 부여합니다.
-  - *Why*: 스크린샷의 `remote: Permission to ... denied to github-actions[bot] (403)` 오류를 직접적으로 해결합니다.
-- **Decision 2: `/docs` 정적 빌드 폴더 동시 제공**
-  - *Chosen Approach*: `vite build` 결과물을 `/docs` 폴더에도 함께 생성해 커밋에 포함합니다.
-  - *Why*: 사용자가 GitHub Actions 설정을 건드리지 않고 브랜치 직접 배포(`main` / `/docs`)로 전환하더라도 빈 화면 없이 완벽히 동작하도록 보장합니다.
+- **Decision 1: 외부 브랜치 푸시 액션(`peaceiris`) 완전 제거 및 공식 아티팩트 배포 채택**
+  - *Chosen Approach*: `actions/upload-pages-artifact@v3` + `actions/deploy-pages@v4` 조합을 사용합니다.
+  - *Why*: `git push origin gh-pages` 과정에서 발생하는 `403 Permission denied` 에러가 구조적으로 발생하지 않으며, GitHub의 `Source: GitHub Actions` 설정과 1:1로 매칭됩니다.
+- **Decision 2: 환경 감지형 `base` 경로(`'/Examen_para_terminar_trabajo/'`)**
+  - *Chosen Approach*: `base: process.env.GITHUB_ACTIONS ? '/Examen_para_terminar_trabajo/' : '/'`로 설정합니다.
+  - *Why*: GitHub Pages 배포본에서는 `/Examen_para_terminar_trabajo/assets/...` 경로를 정확히 가리키고, 로컬 및 AI 스튜디오 미리보기에서는 루트(`/`) 경로를 유지해 두 환경 모두에서 깨짐이 없습니다.
 
 ---
 
@@ -48,12 +47,19 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                     프로젝트 빌드 및 GitHub Push                         │
-├───────────────────────────────────┬─────────────────────────────────────┤
-│ 경로 1: GitHub Actions 자동 배포   │ 경로 2: Actions 없는 직접 배포       │
-│ (.github/workflows/deploy.yml)    │ (저장소 내 /docs 정적 빌드 폴더)      │
-│ • permissions: contents: write    │ • 이미 컴파일된 index.html + assets │
-│ • peaceiris/actions-gh-pages@v4   │ • Settings > Pages > main /docs 선택│
-│ • gh-pages 브랜치에 403 없이 Push  │ • 빌드 대기이나 에러 없이 즉시 작동  │
-└───────────────────────────────────┴─────────────────────────────────────┘
+│                .github/workflows/deploy.yml (단일 워크플로)              │
+│  • permissions: { contents: read, pages: write, id-token: write }       │
+│  • actions/checkout@v4                                                  │
+│  • actions/setup-node@v4 (node-version: 20)                             │
+│  • npm install --legacy-peer-deps                                       │
+│  • npm run build (base: '/Examen_para_terminar_trabajo/' ➔ ./dist)      │
+│  • actions/configure-pages@v5                                           │
+│  • actions/upload-pages-artifact@v3 (path: './dist')                    │
+│  • actions/deploy-pages@v4                                              │
+└────────────────────────────────────┬────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│       https://yoan-kim.github.io/Examen_para_terminar_trabajo/          │
+└─────────────────────────────────────────────────────────────────────────┘
 ```

@@ -1,6 +1,6 @@
 {
-  "summary":  "GitHub Actions 403 Permission Denied 에러 해결(contents: write 권한 부여) 및 /docs 정적 빌드 폴더 동시 생성 계획서",
-  "updatedAt":  "2026-11-09T15:50:29.353486098Z",
+  "summary":  "GitHub 공식 Pages 표준 워크플로(actions/configure-pages@v5, upload-pages-artifact@v3, deploy-pages@v4) 및 /Examen_para_terminar_trabajo/ base 경로 적용 계획서",
+  "updatedAt":  "2026-11-09T16:09:10.377848171Z",
   "requestFeedback":  true,
   "userFacing":  true
 }
