@@ -1,6 +1,6 @@
 {
-  "summary": "터치하여 확인 버튼 수정, 스피드→철자 자동 전환 및 탭 클릭 시 셔플, 정답/오답 효과음 및 폭죽/박수 연출 구현 계획서",
-  "updatedAt": "2026-11-05T16:45:26.340813537Z",
-  "requestFeedback": true,
-  "userFacing": true
+  "summary":  "GitHub Pages 완벽 배포를 위한 상대 경로(base: './') 설정 및 무결점 GitHub Actions 워크플로(.github/workflows/deploy.yml) 구성 계획서",
+  "updatedAt":  "2026-11-09T15:15:04.083319574Z",
+  "requestFeedback":  true,
+  "userFacing":  true
 }
