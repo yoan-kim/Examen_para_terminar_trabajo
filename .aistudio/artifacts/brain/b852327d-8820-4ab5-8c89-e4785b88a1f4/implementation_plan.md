@@ -1,67 +1,59 @@
-# GitHub Pages 자동 배포 디버깅 및 최적화 계획
+# GitHub Pages 403 권한 거부(Permission Denied) 해결 및 이중 배포 지원 계획
 
-GitHub Pages 배포 시 발생하던 빌드 실패(`npm ci` / 패키지 의존성 충돌 / Node 버전 호환성 오류)와 배포 후 빈 화면(404 에셋 경로 오류) 문제를 근본적으로 해결하여, GitHub에 푸시(Push)만 하면 즉시 자동으로 배포되도록 구성합니다.
+`peaceiris/actions-gh-pages@v4`가 `gh-pages` 브랜치에 푸시할 때 발생한 **`403 Permission denied to github-actions[bot]`** 에러를 해결하기 위해, 워크플로에 명시적 쓰기 권한(`contents: write`)을 부여하고, 동시에 GitHub Actions 없이도 `main` 브랜치에서 즉시 배포할 수 있는 **`/docs` 프로덕션 빌드 폴더**까지 함께 생성합니다.
 
 ### User Review & Critical Decisions
 
 > [!IMPORTANT]
-> 사용자 답변을 통해 확정된 GitHub Pages 배포 설정입니다.
+> 사용자 선택에 따라 아래 두 가지 해결책을 모두 적용합니다.
 
-- **오류 없는 GitHub Actions 자동 배포 워크플로 생성 (확정)**: 기존에 에러를 일으키던 요소(`npm ci` 락파일 충돌, Node 버전 미달, 피어 의존성 에러)를 모두 해결한 새 **`.github/workflows/deploy.yml`** 파일을 프로젝트 내에 생성합니다.
-- **상대 경로(`base: './'`) 빌드 설정 (확정)**: 저장소 이름(`Examen_para_terminar_trabajo` 등)이나 대소문자·경로 구조에 상관없이 모든 JS/CSS 리소스가 정상 로드되도록 Vite 빌드 기본 경로를 **`./` (상대 경로)**로 설정합니다.
+- **해결책 1 — 워크플로 쓰기 권한(`contents: write`) 명시**: `.github/workflows/deploy.yml` 최상단 및 Job 레벨에 `permissions: contents: write`를 부여하여 `github-actions[bot]`이 `gh-pages` 브랜치에 403 에러 없이 커밋·푸시할 수 있도록 수정합니다.
+- **해결책 2 — `/docs` 폴더에 완성된 빌드 결과물 직접 포함**: 프로젝트를 미리 빌드하여 `/docs` 폴더(`index.html`, 컴파일된 JS/CSS 번들, `.nojekyll`)를 저장소에 함께 포함시킵니다. 만약 GitHub 저장소에서 Actions를 아예 끄고 `Deploy from a branch (main / docs)`를 선택하더라도 1초 만에 바로 사이트가 열립니다.
 
 ---
 
 ### 1. Overview & Core Concept
 
-- **What It Does**:
-  1. **Vite 상대 경로(`base: './'`) 적용**: `https://<아이디>.github.io/<저장소이름>/` 형태의 서브경로에서 정적 파일(`index.js`, `index.css`)을 찾지 못해 하얀 빈 화면이 나오는 현상을 방지합니다.
-  2. **무결점 `.github/workflows/deploy.yml` 탑재**:
-     - Vite 8 요구사항을 충족하는 **Node.js 22** 환경 사용
-     - `package-lock.json` 유무와 무관하게 절대 실패하지 않는 **`npm install --legacy-peer-deps`** 사용
-     - GitHub 공식 Pages 배포 액션(`actions/configure-pages@v5`, `actions/upload-pages-artifact@v3`, `actions/deploy-pages@v4`) 및 권한(`pages: write`, `id-token: write`) 자동 구성
-  3. **Jekyll 우회(`.nojekyll`) 및 불필요한 대용량 첨부 이미지 정리**: GitHub Pages가 특수 파일명을 무시하지 않도록 `.nojekyll` 파일을 포함하고, 빌드에 불필요한 임시 스크린샷 에셋을 정리해 빌드 속도를 높입니다.
+- **Why the 403 Error Happened**:
+  - GitHub의 기본 보안 설정상 `GITHUB_TOKEN`(`github-actions[bot]`)은 저장소 읽기 권한(`contents: read`)만 가지며, `gh-pages` 브랜치에 새 커밋을 푸시(`git push origin gh-pages`)하려면 반드시 **`contents: write`** 권한이 필요합니다.
+- **What This Fix Delivers**:
+  1. 워크플로 파일(`.github/workflows/deploy.yml`)에 `contents: write`, `pages: write`, `id-token: write` 권한을 모두 부여하고, `peaceiris/actions-gh-pages@v4`와 공식 GitHub Pages 배포가 모두 권한 에러 없이 통과하도록 구성합니다.
+  2. 빌드 스크립트 실행 시 `dist`뿐만 아니라 `/docs` 폴더에도 최신 프로덕션 빌드 파일을 생성하여, 브랜치 직접 배포(`main` ➔ `/docs` 또는 `gh-pages` ➔ `/root`) 어느 쪽을 선택하든 즉시 작동하게 만듭니다.
 
 ---
 
 ### 2. User Experience & Visual Design
 
-- **Key User Flows (배포 완료 후 절차)**:
-  1. 코드가 GitHub 저장소(`main` 브랜치)에 푸시되면 `.github/workflows/deploy.yml`이 자동 실행됩니다.
-  2. GitHub 저장소의 **[Settings] ➔ [Pages]** 메뉴에서 **Build and deployment > Source**를 **`GitHub Actions`**로 한 번만 선택해 두면, 약 30~40초 내에 배포가 완료되어 GitHub Pages 주소로 즉시 접속할 수 있습니다.
+- **Key User Flows (GitHub에서 확인하실 2가지 방법 중 택1)**:
+  - **방법 A (기존처럼 `gh-pages` 브랜치로 자동 배포할 때)**:
+    1. 코드 푸시 시 `.github/workflows/deploy.yml`의 `contents: write` 권한으로 `gh-pages` 브랜치가 자동 생성·업데이트됩니다.
+    2. 만약 GitHub 저장소 자체 설정에서 쓰기 권한이 잠겨 있다면: **[Settings] ➔ [Actions] ➔ [General]** 하단의 **Workflow permissions**에서 **`Read and write permissions`**를 체크하고 Save를 누르면 403 에러가 100% 사라집니다.
+  - **방법 B (Actions를 아예 쓰지 않고 바로 배포할 때)**:
+    1. **[Settings] ➔ [Pages]**에서 **Source**를 `Deploy from a branch`로 두고, Branch를 **`main` / `/docs`**로 선택 후 Save를 누르면 Actions 실행 없이도 즉시 배포가 완료됩니다.
 
 ---
 
 ### 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: `npm ci` 대신 `npm install --legacy-peer-deps` 채택**
-  - *Chosen Approach*: 워크플로 내 의존성 설치 명령을 `npm install --legacy-peer-deps`로 지정합니다.
-  - *Why*: 기본 템플릿의 `npm ci`는 `package-lock.json`이 없거나 미세한 버전 차이가 있을 때 즉시 에러(`exit code 1`)를 내며 중단됩니다. `npm install --legacy-peer-deps`를 사용하면 언제나 안정적으로 패키지를 설치합니다.
-- **Decision 2: Node.js 22 LTS 고정**
-  - *Chosen Approach*: GitHub Actions 러너의 Node 버전을 `22`로 명시합니다.
-  - *Why*: 프로젝트의 최신 Vite 8 및 플러그인들은 Node 20.19+ / 22 환경을 요구하므로, 구버전 Node(18 등)로 인해 발생하던 빌드 에러를 원천 차단합니다.
+- **Decision 1: `contents: write` 권한 + `peaceiris/actions-gh-pages@v4` 호환 구성**
+  - *Chosen Approach*: 워크플로에 `permissions: contents: write`를 명시하여 `github-actions[bot]`에게 브랜치 푸시 권한을 부여합니다.
+  - *Why*: 스크린샷의 `remote: Permission to ... denied to github-actions[bot] (403)` 오류를 직접적으로 해결합니다.
+- **Decision 2: `/docs` 정적 빌드 폴더 동시 제공**
+  - *Chosen Approach*: `vite build` 결과물을 `/docs` 폴더에도 함께 생성해 커밋에 포함합니다.
+  - *Why*: 사용자가 GitHub Actions 설정을 건드리지 않고 브랜치 직접 배포(`main` / `/docs`)로 전환하더라도 빈 화면 없이 완벽히 동작하도록 보장합니다.
 
 ---
 
 ### 4. Technical Architecture & Data Strategy
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                  GitHub Repository (main 브랜치 Push)                 │
-└──────────────────────────────────┬───────────────────────────────────┘
-                                   │
-                                   ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│            GitHub Actions (.github/workflows/deploy.yml)             │
-│  1. Checkout Repository (actions/checkout@v4)                        │
-│  2. Setup Node.js 22 (actions/setup-node@v4)                         │
-│  3. Install Dependencies (npm install --legacy-peer-deps)            │
-│  4. Build Vite App with base: './' (npm run build ➔ ./dist)          │
-│  5. Upload & Deploy to GitHub Pages (actions/deploy-pages@v4)        │
-└──────────────────────────────────┬───────────────────────────────────┘
-                                   │
-                                   ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│        Live GitHub Pages (https://yoan-kim.github.io/저장소이름/)     │
-└──────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     프로젝트 빌드 및 GitHub Push                         │
+├───────────────────────────────────┬─────────────────────────────────────┤
+│ 경로 1: GitHub Actions 자동 배포   │ 경로 2: Actions 없는 직접 배포       │
+│ (.github/workflows/deploy.yml)    │ (저장소 내 /docs 정적 빌드 폴더)      │
+│ • permissions: contents: write    │ • 이미 컴파일된 index.html + assets │
+│ • peaceiris/actions-gh-pages@v4   │ • Settings > Pages > main /docs 선택│
+│ • gh-pages 브랜치에 403 없이 Push  │ • 빌드 대기이나 에러 없이 즉시 작동  │
+└───────────────────────────────────┴─────────────────────────────────────┘
 ```
