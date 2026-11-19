@@ -21,6 +21,7 @@ import {
   getWordDisplay,
   checkTermAnswer,
   checkMeaningAnswer,
+  isOneToOneReviewWord,
 } from '../data/vocabData';
 import { speakEcuadorSpanish } from '../utils/tts';
 import {
@@ -127,7 +128,24 @@ export const ExamView: React.FC<ExamViewProps> = ({
       for (let r = 1; r < currentRound; r++) {
         prevPool = prevPool.concat(VOCAB_DATABASE[r]?.words || []);
       }
-      shuffleArray(prevPool)
+      // Filter cumulative review pool: exclude multi-word expressions (2+ Spanish words)
+      // and include only 1:1 single Spanish word to single Korean meaning items.
+      const strictOneToOnePool = prevPool.filter(isOneToOneReviewWord);
+      let reviewCandidates = shuffleArray(strictOneToOnePool);
+
+      // Fallback only for very early rounds (e.g. Round 2) if fewer than 10 strict 1:1 words exist:
+      // still strictly exclude multi-word Spanish expressions (!w.es.trim().includes(' '))
+      if (reviewCandidates.length < 10) {
+        const pickedIds = new Set(reviewCandidates.map((w) => w.id));
+        const singleSpanishFallback = shuffleArray(
+          prevPool.filter(
+            (w) => !w.es.trim().includes(' ') && !pickedIds.has(w.id)
+          )
+        );
+        reviewCandidates = reviewCandidates.concat(singleSpanishFallback);
+      }
+
+      reviewCandidates
         .slice(0, 10)
         .forEach((w, i) => {
           generated.push({
@@ -426,8 +444,8 @@ export const ExamView: React.FC<ExamViewProps> = ({
     return (
       <div className="flex flex-col gap-5">
         <div className="rounded-2xl border-2 border-indigo-600 dark:border-indigo-500 bg-white dark:bg-slate-900 p-6 text-center">
-          <p className="text-xs font-extrabold text-slate-500 dark:text-slate-400">
-            {t.examFinalScoreLabel}
+          <p className="text-base sm:text-lg font-extrabold text-slate-600 dark:text-slate-300">
+            {currentRound}회차 {t.examFinalScoreLabel}
           </p>
 
           <div className="text-5xl font-black text-indigo-600 dark:text-indigo-400 font-mono tabular-nums my-3">

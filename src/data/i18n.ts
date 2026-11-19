@@ -131,7 +131,7 @@ export interface I18nStrings {
 
 const KOREAN_STRINGS: I18nStrings = {
   appTitle: '스페인어 퇴근 단어 마스터',
-  appSubtitle: '1회차부터 30회차까지 핵심 600단어 완전 정복',
+  appSubtitle: '1회차부터 60회차까지 핵심 1200단어 완전 정복',
   ecuadorBadge: '라틴아메리카 에콰도르 발음',
   shortcutBtn: '단축키 안내',
   shortcutTooltip: '키보드 단축키 안내 열기',
@@ -197,7 +197,7 @@ const KOREAN_STRINGS: I18nStrings = {
   searchPlaceholder: '스페인어 단어 또는 한국어 뜻 검색...',
   searchClearTooltip: '검색어 지우기',
   searchScopeRound: '현재 회차',
-  searchScopeAll: '전체 600단어',
+  searchScopeAll: '전체 1200단어',
   maskTermShow: '스페인어 보이기',
   maskTermHide: '스페인어 가리기',
   maskDefShow: '한국어 보이기',
@@ -228,7 +228,7 @@ const KOREAN_STRINGS: I18nStrings = {
     '편법 방지: 실전 시험 중에는 힌트·이전단어·다시풀기가 금지됩니다.',
   ],
   examRuleCumulative: (round) => [
-    `1단계 (누적 복습 10문항): 1~${round - 1}회차 누적 전체에서 무작위 10문제 추출`,
+    `1단계 (누적 복습 10문항): 1~${round - 1}회차 누적 1:1 단일 단어에서 무작위 10문제 추출 (2단어 이상 숙어 제외)`,
     `2단계 (금회차 본시험 10문항): ${round}회차 전체에서 무작위 10문제 추출`,
     '총 문항 수: 20문항 (문항당 5점 / 80점 이상 시 퇴근 가능!)',
     '편법 방지: 실전 시험 중에는 힌트·이전단어·다시풀기가 금지됩니다.',

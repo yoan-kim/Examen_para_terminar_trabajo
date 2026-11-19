@@ -21,7 +21,7 @@ import {
   VolumeX,
 } from 'lucide-react';
 import { AppLanguage, I18N } from './data/i18n';
-import { VOCAB_DATABASE } from './data/vocabData';
+import { VOCAB_DATABASE, TOTAL_ROUNDS } from './data/vocabData';
 import { initEcuadorTTS } from './utils/tts';
 import { useAdvancedStudy } from './utils/advancedStudy';
 import { useSoundEffects } from './utils/soundEffects';
@@ -137,7 +137,7 @@ export default function App() {
   }, []);
 
   const stepRound = useCallback((delta: number) => {
-    setCurrentRound((prev) => Math.max(1, Math.min(30, prev + delta)));
+    setCurrentRound((prev) => Math.max(1, Math.min(TOTAL_ROUNDS, prev + delta)));
   }, []);
 
   // Global [ and ] round navigation shortcuts
@@ -311,7 +311,7 @@ export default function App() {
           </div>
 
           <div className="grid grid-cols-2 gap-2 max-h-[68vh] overflow-y-auto pr-1">
-            {Array.from({ length: 30 }, (_, i) => i + 1).map((r) => {
+            {Array.from({ length: TOTAL_ROUNDS }, (_, i) => i + 1).map((r) => {
               const best = roundScores[r];
               const isPassed = best !== undefined && best >= 80;
               const isSelected = r === currentRound;
@@ -371,10 +371,10 @@ export default function App() {
             <select
               value={currentRound}
               onChange={(e) => setCurrentRound(parseInt(e.target.value, 10))}
-              title="학습 회차 선택 (1회 ~ 30회)"
+              title={`학습 회차 선택 (1회 ~ ${TOTAL_ROUNDS}회)`}
               className="flex-1 min-h-[42px] px-3 py-2 rounded-xl border-2 border-indigo-600 dark:border-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-extrabold text-sm sm:text-base text-center outline-none cursor-pointer"
             >
-              {Array.from({ length: 30 }, (_, i) => i + 1).map((r) => (
+              {Array.from({ length: TOTAL_ROUNDS }, (_, i) => i + 1).map((r) => (
                 <option key={r} value={r}>
                   {t.roundOptionLabel(r)}
                 </option>
@@ -384,7 +384,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => stepRound(1)}
-              disabled={currentRound >= 30}
+              disabled={currentRound >= TOTAL_ROUNDS}
               title={t.nextRoundTooltip}
               className="min-h-[42px] px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400 text-xs sm:text-sm font-extrabold inline-flex items-center gap-1 cursor-pointer disabled:opacity-40 whitespace-nowrap"
             >
