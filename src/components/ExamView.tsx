@@ -13,7 +13,6 @@ import {
   RotateCcw,
   Sparkles,
   Send,
-  ChevronDown,
 } from 'lucide-react';
 import { AppLanguage, I18N } from '../data/i18n';
 import {
@@ -118,7 +117,6 @@ export const ExamView: React.FC<ExamViewProps> = ({
 
   // Telegram & Google Sheet Pass Submission State
   const [passPanelOpen, setPassPanelOpen] = useState(false);
-  const [nameDropdownOpen, setNameDropdownOpen] = useState(false);
   const [studentName, setStudentName] = useState<string>(() =>
     getSavedStudentName()
   );
@@ -135,7 +133,6 @@ export const ExamView: React.FC<ExamViewProps> = ({
     setStage('intro');
     setWrongNoteOpen(false);
     setPassPanelOpen(false);
-    setNameDropdownOpen(false);
     setPassSentInfo(null);
   }, [currentRound, studyLevel, lang]);
 
@@ -212,7 +209,6 @@ export const ExamView: React.FC<ExamViewProps> = ({
     setWrongList([]);
     setWrongNoteOpen(false);
     setPassPanelOpen(false);
-    setNameDropdownOpen(false);
     setPassSentInfo(null);
     setStepAnswered(false);
     setStepCorrect(false);
@@ -553,11 +549,8 @@ export const ExamView: React.FC<ExamViewProps> = ({
               {!passPanelOpen ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    setPassPanelOpen(true);
-                    setNameDropdownOpen(true);
-                  }}
-                  title="클릭하여 명단 드롭다운에서 내 이름을 누르면 퇴근스페인어 텔레그램 방에 합격 메시지가 즉시 전송됩니다"
+                  onClick={() => setPassPanelOpen(true)}
+                  title="클릭하여 이름을 선택하고 퇴근스페인어 텔레그램 방에 합격 메시지 보내기"
                   className="w-full min-h-[48px] py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
@@ -571,7 +564,8 @@ export const ExamView: React.FC<ExamViewProps> = ({
                   </div>
 
                   <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                    아래 드롭다운 칸을 클릭하고 <strong>내 이름을 누르면</strong>{' '}
+                    위 명단에서 <strong>이름 버튼을 클릭</strong>하고 아래{' '}
+                    <strong>[전송]</strong>을 누르면{' '}
                     <span className="text-emerald-700 dark:text-emerald-300 font-bold">
                       &ldquo;🎉 {studentName.trim() || '이름'}님이 [{levelConfig.labelKo}]{' '}
                       {currentRound}회차를 {totalScore}점으로 통과했습니다
@@ -580,88 +574,99 @@ export const ExamView: React.FC<ExamViewProps> = ({
                     메시지가 퇴근스페인어 방에 즉시 전송됩니다.
                   </p>
 
-                  {/* Clickable Dropdown Roster Field (Click a name -> immediately sends to Telegram) */}
-                  <div className="relative">
+                  {/* 4-Column Selectable Name Buttons Grid (like reference image) */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {PRESET_STUDENT_NAMES.map((presetName) => {
+                      const isSelected = studentName.trim() === presetName;
+                      return (
+                        <button
+                          key={presetName}
+                          type="button"
+                          disabled={submittingPass || Boolean(passSentInfo?.ok)}
+                          onClick={() => {
+                            setStudentName(presetName);
+                            setSavedStudentName(presetName);
+                          }}
+                          className={`min-h-[44px] px-3 py-2.5 rounded-xl border font-extrabold text-sm flex items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-60 ${
+                            isSelected
+                              ? 'bg-sky-600 border-sky-600 text-white shadow-sm'
+                              : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-sky-500 dark:hover:border-sky-500'
+                          }`}
+                        >
+                          {presetName}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Selected Name & Send Button Row Directly Below */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <input
+                      type="text"
+                      value={studentName}
+                      disabled={submittingPass || Boolean(passSentInfo?.ok)}
+                      onChange={(e) => setStudentName(e.target.value)}
+                      placeholder="위 이름 버튼을 클릭하거나 직접 입력"
+                      className="flex-1 min-h-[44px] px-3.5 py-2 rounded-xl border-2 border-emerald-500/80 dark:border-emerald-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-extrabold outline-none focus:border-emerald-600 disabled:opacity-60"
+                    />
+
                     <button
                       type="button"
-                      disabled={submittingPass || Boolean(passSentInfo?.ok)}
-                      onClick={() => setNameDropdownOpen((prev) => !prev)}
-                      title="클릭하여 수강생 명단 드롭다운 열기"
-                      className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border-2 border-emerald-500 dark:border-emerald-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-extrabold flex items-center justify-between gap-2 shadow-xs hover:border-emerald-600 transition-all cursor-pointer disabled:opacity-60"
-                    >
-                      <span className="truncate">
-                        {submittingPass
-                          ? `⏳ ${studentName} 님 합격 메시지 텔레그램 전송 중...`
-                          : passSentInfo?.ok
-                          ? `✅ ${studentName} 님 합격 메시지 전송 완료!`
-                          : studentName
-                          ? `${studentName} (클릭하여 이름 선택 시 즉시 전송)`
-                          : '내 이름 선택 (클릭 후 이름을 누르면 바로 전송됩니다)'}
-                      </span>
-                      <ChevronDown
-                        className={`w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 transition-transform ${
-                          nameDropdownOpen ? 'rotate-180' : ''
-                        }`}
-                      />
-                    </button>
+                      disabled={
+                        submittingPass ||
+                        !studentName.trim() ||
+                        Boolean(passSentInfo?.ok)
+                      }
+                      onClick={async () => {
+                        const cleanName = studentName.trim();
+                        if (!cleanName) return;
+                        setSavedStudentName(cleanName);
 
-                    {nameDropdownOpen && !passSentInfo?.ok && (
-                      <div className="mt-1.5 rounded-xl border-2 border-emerald-500 dark:border-emerald-600 bg-white dark:bg-slate-900 shadow-lg overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
-                        {PRESET_STUDENT_NAMES.map((presetName) => (
-                          <button
-                            key={presetName}
-                            type="button"
-                            disabled={submittingPass}
-                            onClick={async () => {
-                              setStudentName(presetName);
-                              setSavedStudentName(presetName);
-                              setNameDropdownOpen(false);
-                              setSubmittingPass(true);
-                              setPassSentInfo(null);
-                              try {
-                                const { response, timestamp } =
-                                  await submitExamPassToTelegramAndSheet({
-                                    name: presetName,
-                                    round: currentRound,
-                                    score: totalScore,
-                                    reviewScore,
-                                    currentRoundScore,
-                                    levelLabel: levelConfig.labelKo,
-                                  });
-                                setPassSentInfo({
-                                  ok: response.ok,
-                                  timestamp,
-                                  status: response.status,
-                                  msg:
-                                    response.message ||
-                                    (response.ok
-                                      ? `전송 완료! (${timestamp})`
-                                      : response.error ||
-                                        '전송에 실패했습니다.'),
-                                });
-                              } catch (err) {
-                                setPassSentInfo({
-                                  ok: false,
-                                  msg:
-                                    err instanceof Error
-                                      ? err.message
-                                      : '전송 중 네트워크 오류가 발생했습니다.',
-                                });
-                              } finally {
-                                setSubmittingPass(false);
-                              }
-                            }}
-                            className="w-full px-4 py-3 text-left text-sm font-extrabold text-slate-900 dark:text-white hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 flex items-center justify-between gap-2 transition-colors cursor-pointer disabled:opacity-50"
-                          >
-                            <span>{presetName}</span>
-                            <span className="text-xs font-bold opacity-85 inline-flex items-center gap-1">
-                              <Send className="w-3.5 h-3.5" />
-                              <span>누르면 바로 전송</span>
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                        setSubmittingPass(true);
+                        setPassSentInfo(null);
+                        try {
+                          const { response, timestamp } =
+                            await submitExamPassToTelegramAndSheet({
+                              name: cleanName,
+                              round: currentRound,
+                              score: totalScore,
+                              reviewScore,
+                              currentRoundScore,
+                              levelLabel: levelConfig.labelKo,
+                            });
+                          setPassSentInfo({
+                            ok: response.ok,
+                            timestamp,
+                            status: response.status,
+                            msg:
+                              response.message ||
+                              (response.ok
+                                ? `전송 완료! (${timestamp})`
+                                : response.error || '전송에 실패했습니다.'),
+                          });
+                        } catch (err) {
+                          setPassSentInfo({
+                            ok: false,
+                            msg:
+                              err instanceof Error
+                                ? err.message
+                                : '전송 중 네트워크 오류가 발생했습니다.',
+                          });
+                        } finally {
+                          setSubmittingPass(false);
+                        }
+                      }}
+                      className="min-h-[44px] px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-extrabold text-sm inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>
+                        {submittingPass
+                          ? '전송 중...'
+                          : passSentInfo?.ok
+                          ? '전송 완료됨'
+                          : '전송'}
+                      </span>
+                    </button>
                   </div>
 
                   {passSentInfo && (
