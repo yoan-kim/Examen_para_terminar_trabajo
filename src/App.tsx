@@ -367,51 +367,42 @@ export default function App() {
       {/* Top Bar */}
       <header className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          {/* Brand Title */}
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h1
-                onClick={() => setLevelSelectedInSession(false)}
-                title="클릭하여 레벨 선택 화면으로 이동"
-                className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white truncate cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-              >
-                {t.appTitle}
-              </h1>
-              {levelSelectedInSession && (
-                <button
-                  type="button"
+          {/* Brand Title & Top Level Change Tab */}
+          <div className="min-w-0 flex items-center gap-2.5">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1
                   onClick={() => setLevelSelectedInSession(false)}
-                  title="클릭하여 초급 / 중급 / 고급 레벨 변경하기"
-                  className="px-2.5 py-0.5 rounded-lg border border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-xs font-extrabold inline-flex items-center gap-1 shrink-0 cursor-pointer transition-colors"
+                  title="클릭하여 첫 화면(레벨 선택 화면)으로 이동"
+                  className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white truncate cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                 >
-                  <span>{levelConfig.badgeIcon}</span>
-                  <span>
-                    {levelConfig.labelKo} ({levelConfig.wordsPerRound}단어)
-                  </span>
-                  <Layers className="w-3 h-3 ml-0.5 opacity-75" />
-                </button>
-              )}
+                  {t.appTitle}
+                </h1>
+
+                {levelSelectedInSession && (
+                  <button
+                    type="button"
+                    onClick={() => setLevelSelectedInSession(false)}
+                    title="클릭하여 첫 화면으로 이동해 초급 / 중급 / 고급 레벨 선택하기"
+                    className="min-h-[34px] px-3 py-1 rounded-xl border-2 border-indigo-500 dark:border-indigo-400 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs sm:text-sm font-extrabold inline-flex items-center gap-1.5 shrink-0 cursor-pointer shadow-xs transition-all"
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>
+                      레벨변경 ({levelConfig.badgeIcon} {levelConfig.labelKo})
+                    </span>
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                {levelSelectedInSession
+                  ? `[${levelConfig.labelKo}] 1회차부터 ${totalRoundsForLevel}회차까지 핵심 1200단어 완전 정복 (회차당 ${levelConfig.wordsPerRound}단어)`
+                  : t.appSubtitle}
+              </p>
             </div>
-            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
-              {levelSelectedInSession
-                ? `[${levelConfig.labelKo}] 1회차부터 ${totalRoundsForLevel}회차까지 핵심 1200단어 완전 정복 (회차당 ${levelConfig.wordsPerRound}단어)`
-                : t.appSubtitle}
-            </p>
           </div>
 
-          {/* Right Controls: Level Switcher, Sound Toggle, Theme Toggle, Shortcuts, Advanced Mode */}
+          {/* Right Controls: Sound Toggle, Theme Toggle, Shortcuts, Advanced Mode */}
           <div className="flex items-center gap-2 shrink-0">
-            {levelSelectedInSession && (
-              <button
-                type="button"
-                onClick={() => setLevelSelectedInSession(false)}
-                title="초급(10단어) · 중급(15단어) · 고급(20단어) 레벨 변경"
-                className="min-h-[38px] px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-extrabold hidden sm:inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
-              >
-                <Layers className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                <span>레벨 변경</span>
-              </button>
-            )}
 
             {/* Sound Effects Toggle */}
             <button
