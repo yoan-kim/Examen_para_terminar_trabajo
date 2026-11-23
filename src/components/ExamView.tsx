@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Sparkles,
   Send,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { AppLanguage, I18N } from '../data/i18n';
 import {
@@ -72,6 +73,7 @@ interface ExamViewProps {
   focusIds: number[];
   onToggleFocus: (wordId: number) => void;
   onSaveRoundScore: (round: number, score: number) => void;
+  onOpenSheetView?: () => void;
   isActiveView: boolean;
 }
 
@@ -94,6 +96,7 @@ export const ExamView: React.FC<ExamViewProps> = ({
   focusIds,
   onToggleFocus,
   onSaveRoundScore,
+  onOpenSheetView,
   isActiveView,
 }) => {
   const t = I18N[lang];
@@ -582,7 +585,7 @@ export const ExamView: React.FC<ExamViewProps> = ({
                         <button
                           key={presetName}
                           type="button"
-                          disabled={submittingPass || Boolean(passSentInfo?.ok)}
+                          disabled={submittingPass}
                           onClick={() => {
                             setStudentName(presetName);
                             setSavedStudentName(presetName);
@@ -604,7 +607,7 @@ export const ExamView: React.FC<ExamViewProps> = ({
                     <input
                       type="text"
                       value={studentName}
-                      disabled={submittingPass || Boolean(passSentInfo?.ok)}
+                      disabled={submittingPass}
                       onChange={(e) => setStudentName(e.target.value)}
                       placeholder="위 이름 버튼을 클릭하거나 직접 입력"
                       className="flex-1 min-h-[44px] px-3.5 py-2 rounded-xl border-2 border-emerald-500/80 dark:border-emerald-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-extrabold outline-none focus:border-emerald-600 disabled:opacity-60"
@@ -612,11 +615,7 @@ export const ExamView: React.FC<ExamViewProps> = ({
 
                     <button
                       type="button"
-                      disabled={
-                        submittingPass ||
-                        !studentName.trim() ||
-                        Boolean(passSentInfo?.ok)
-                      }
+                      disabled={submittingPass || !studentName.trim()}
                       onClick={async () => {
                         const cleanName = studentName.trim();
                         if (!cleanName) return;
@@ -659,13 +658,7 @@ export const ExamView: React.FC<ExamViewProps> = ({
                       className="min-h-[44px] px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-extrabold text-sm inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
                     >
                       <Send className="w-4 h-4" />
-                      <span>
-                        {submittingPass
-                          ? '전송 중...'
-                          : passSentInfo?.ok
-                          ? '전송 완료됨'
-                          : '전송'}
-                      </span>
+                      <span>{submittingPass ? '전송 중...' : '전송'}</span>
                     </button>
                   </div>
 
@@ -686,11 +679,24 @@ export const ExamView: React.FC<ExamViewProps> = ({
                         <div>{passSentInfo.msg}</div>
                         {passSentInfo.ok && passSentInfo.timestamp && (
                           <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                            전송 시각(에콰도르): ({passSentInfo.timestamp})
+                            누적 항목: [전송날짜 · 시간 · {studentName} · {levelConfig.labelKo}({currentRound}회차) · {totalScore}점 · 합격]
                           </div>
                         )}
                       </div>
                     </div>
+                  )}
+
+                  {onOpenSheetView && (
+                    <button
+                      type="button"
+                      onClick={onOpenSheetView}
+                      className="w-full py-2.5 px-3.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-emerald-50 dark:hover:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 shrink-0" />
+                      <span>
+                        📊 누적 스프레드시트 보기 & 날짜별 합격·미합격·지각 명단 텔레방 정리 올리기
+                      </span>
+                    </button>
                   )}
                 </div>
               )}

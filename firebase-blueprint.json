@@ -13,11 +13,11 @@
         },
         "round": {
           "type": "number",
-          "description": "Exam round number (1 to 60)"
+          "description": "Exam round number (1 to 120)"
         },
         "score": {
           "type": "number",
-          "description": "Final exam score (80 to 100)"
+          "description": "Final exam score (0 to 100)"
         },
         "reviewScore": {
           "type": "number",
@@ -26,6 +26,19 @@
         "currentRoundScore": {
           "type": "number",
           "description": "Current round exam score"
+        },
+        "levelLabel": {
+          "type": "string",
+          "description": "Study level label (초급, 중급, 고급)",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "passStatus": {
+          "type": "string",
+          "description": "Pass status (합격 or 불합격)",
+          "enum": ["합격", "불합격"],
+          "minLength": 1,
+          "maxLength": 10
         },
         "fullTimestamp": {
           "type": "string",

@@ -704,6 +704,7 @@ export default function App() {
                   focusIds={focusIds}
                   onToggleFocus={handleToggleFocus}
                   onSaveRoundScore={handleSaveRoundScore}
+                  onOpenSheetView={() => setIsSheetRoute(true)}
                   isActiveView={activeTab === 'exam' && !shortcutOpen}
                 />
               )}

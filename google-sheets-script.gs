@@ -19,6 +19,16 @@ const SHEET_SUBMISSIONS = '제출기록';
 const SHEET_ROSTER = '수강생명단';
 const SHEET_LATE_LOG = '지각_미제출_누적로그';
 
+const PRESET_ROSTER_NAMES = [
+  'Celeste',
+  'Daniel',
+  'Daniela',
+  'Lucia',
+  'Miguel',
+  'Selina',
+  'Lia'
+];
+
 function initSheetsIfNeeded() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -26,16 +36,15 @@ function initSheetsIfNeeded() {
   if (!subSheet) {
     subSheet = ss.insertSheet(SHEET_SUBMISSIONS);
     subSheet.appendRow([
-      '제출일시(에콰도르)',
-      '날짜',
-      '제출시간',
+      '전송날짜',
+      '시간',
       '이름',
-      '통과회차',
+      '등급',
       '점수',
-      '마감기준시간',
+      '합격여부',
       '출결상태(정상/지각)'
     ]);
-    subSheet.getRange('A1:H1').setFontWeight('bold').setBackground('#e0e7ff');
+    subSheet.getRange('A1:G1').setFontWeight('bold').setBackground('#e0e7ff');
   }
 
   let rosterSheet = ss.getSheetByName(SHEET_ROSTER);
@@ -51,6 +60,9 @@ function initSheetsIfNeeded() {
       '최근 제출 일시'
     ]);
     rosterSheet.getRange('A1:G1').setFontWeight('bold').setBackground('#dcfce7');
+    for (let i = 0; i < PRESET_ROSTER_NAMES.length; i++) {
+      rosterSheet.appendRow([PRESET_ROSTER_NAMES[i], 'Y', 0, 0, 0, '-', '-']);
+    }
   }
 
   let logSheet = ss.getSheetByName(SHEET_LATE_LOG);
@@ -74,8 +86,10 @@ function doPost(e) {
     const { subSheet, rosterSheet, logSheet } = initSheetsIfNeeded();
     const body = JSON.parse(e.postData.contents || '{}');
     const name = String(body.name || '').trim();
+    const levelLabel = String(body.levelLabel || '고급').trim();
     const round = Number(body.round || 1);
     const score = Number(body.score || 80);
+    const passStatus = String(body.passStatus || (score >= 80 ? '합격' : '불합격'));
     const now = new Date();
     const dateOnly = body.dateOnly || Utilities.formatDate(now, TIMEZONE, 'yyyy-MM-dd');
     const timeOnly = body.timeOnly || Utilities.formatDate(now, TIMEZONE, 'HH:mm:ss');
@@ -86,17 +100,16 @@ function doPost(e) {
     const statusLabel = isLate ? '지각' : '정상';
 
     subSheet.appendRow([
-      fullTimestamp,
       dateOnly,
       timeOnly,
       name,
-      round + '회차',
+      levelLabel + ' (' + round + '회차)',
       score + '점',
-      deadline,
+      passStatus,
       statusLabel
     ]);
 
-    updateRosterOnSubmit(rosterSheet, name, round, fullTimestamp, isLate);
+    updateRosterOnSubmit(rosterSheet, name, levelLabel + ' ' + round, fullTimestamp, isLate);
 
     if (isLate) {
       logSheet.appendRow([

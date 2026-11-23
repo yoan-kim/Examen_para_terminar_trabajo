@@ -36,6 +36,8 @@ service cloud.firestore {
         'score',
         'reviewScore',
         'currentRoundScore',
+        'levelLabel',
+        'passStatus',
         'fullTimestamp',
         'dateOnly',
         'timeOnly',
@@ -43,10 +45,12 @@ service cloud.firestore {
         'status'
       ]) &&
       data.name is string && data.name.size() >= 1 && data.name.size() <= 60 &&
-      data.round is int && data.round >= 1 && data.round <= 60 &&
+      data.round is int && data.round >= 1 && data.round <= 120 &&
       data.score is int && data.score >= 0 && data.score <= 100 &&
       data.reviewScore is int && data.reviewScore >= 0 && data.reviewScore <= 100 &&
       data.currentRoundScore is int && data.currentRoundScore >= 0 && data.currentRoundScore <= 100 &&
+      (!('levelLabel' in data) || (data.levelLabel is string && data.levelLabel.size() >= 1 && data.levelLabel.size() <= 20)) &&
+      (!('passStatus' in data) || (data.passStatus is string && (data.passStatus == '합격' || data.passStatus == '불합격'))) &&
       data.fullTimestamp is string && data.fullTimestamp.size() >= 10 && data.fullTimestamp.size() <= 30 &&
       data.dateOnly is string && data.dateOnly.size() >= 10 && data.dateOnly.size() <= 15 &&
       data.timeOnly is string && data.timeOnly.size() >= 5 && data.timeOnly.size() <= 15 &&

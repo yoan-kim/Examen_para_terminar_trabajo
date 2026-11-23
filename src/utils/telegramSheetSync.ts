@@ -171,7 +171,10 @@ export async function submitExamPassToTelegramAndSheet(params: {
   timestamp: string;
 }> {
   const cleanName = params.name.trim();
-  const levelTag = params.levelLabel ? `[${params.levelLabel}] ` : '';
+  const levelLabel = params.levelLabel || '고급';
+  const levelTag = `[${levelLabel}] `;
+  const passStatus: '합격' | '불합격' =
+    params.score >= 80 ? '합격' : '불합격';
   const ecTime = getEcuadorTimestamp();
   const submitHHMM = ecTime.timeOnly.slice(0, 5);
   const isLate = submitHHMM > DEFAULT_DEADLINE_TIME;
@@ -183,13 +186,13 @@ export async function submitExamPassToTelegramAndSheet(params: {
   let sheetRecorded = false;
   try {
     await savePassToCloudSpreadsheet({
-      name: params.levelLabel
-        ? `${cleanName} (${params.levelLabel})`
-        : cleanName,
+      name: cleanName,
       round: params.round,
       score: params.score,
       reviewScore: params.reviewScore,
       currentRoundScore: params.currentRoundScore,
+      levelLabel,
+      passStatus,
       fullTimestamp: ecTime.fullTimestamp,
       dateOnly: ecTime.dateOnly,
       timeOnly: ecTime.timeOnly,
@@ -215,17 +218,18 @@ export async function submitExamPassToTelegramAndSheet(params: {
         },
         body: JSON.stringify({
           action: 'submit_pass_sheet_only',
-          name: params.levelLabel
-            ? `${cleanName} (${params.levelLabel})`
-            : cleanName,
+          dateOnly: ecTime.dateOnly,
+          timeOnly: ecTime.timeOnly,
+          name: cleanName,
+          levelLabel,
           round: params.round,
           score: params.score,
+          passStatus,
           reviewScore: params.reviewScore,
           currentRoundScore: params.currentRoundScore,
           timestamp: ecTime.fullTimestamp,
-          dateOnly: ecTime.dateOnly,
-          timeOnly: ecTime.timeOnly,
           deadlineTime: DEFAULT_DEADLINE_TIME,
+          status: statusLabel,
           skipTelegram: telegramOk,
         }),
       });

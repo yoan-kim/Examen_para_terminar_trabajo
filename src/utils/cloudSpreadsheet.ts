@@ -90,6 +90,8 @@ export interface CloudPassRecord {
   score: number;
   reviewScore: number;
   currentRoundScore: number;
+  levelLabel: string;
+  passStatus: '합격' | '불합격';
   fullTimestamp: string;
   dateOnly: string;
   timeOnly: string;
@@ -118,23 +120,53 @@ function makeRosterId(name: string): string {
   return hex.slice(0, 120);
 }
 
+export function parseNameAndLevel(
+  rawName: string,
+  explicitLevel?: string
+): { baseName: string; levelLabel: string } {
+  const trimmed = rawName.trim();
+  const match = trimmed.match(/^(.*?)\s*\((초급|중급|고급)\)\s*$/);
+  if (match) {
+    return {
+      baseName: match[1].trim() || trimmed,
+      levelLabel: explicitLevel || match[2],
+    };
+  }
+  return {
+    baseName: trimmed,
+    levelLabel: explicitLevel || '고급',
+  };
+}
+
 /**
  * Saves an exam pass submission directly into the live Cloud Spreadsheet (Firestore)
  * and ensures the student is registered in the roster.
  */
-export async function savePassToCloudSpreadsheet(record: Omit<CloudPassRecord, 'id'>): Promise<string> {
+export async function savePassToCloudSpreadsheet(
+  record: Omit<CloudPassRecord, 'id'>
+): Promise<string> {
   const recordId = makeSafeDocId('pass');
   const path = `pass_records/${recordId}`;
+  const { baseName, levelLabel } = parseNameAndLevel(
+    record.name,
+    record.levelLabel
+  );
+  const cleanScore = Math.max(0, Math.min(100, Math.round(record.score)));
+  const computedPassStatus: '합격' | '불합격' =
+    record.passStatus || (cleanScore >= 80 ? '합격' : '불합격');
+
   try {
     await setDoc(doc(db, 'pass_records', recordId), {
-      name: record.name.trim().slice(0, 60),
-      round: Math.max(1, Math.min(60, Math.round(record.round))),
-      score: Math.max(0, Math.min(100, Math.round(record.score))),
+      name: baseName.slice(0, 60),
+      round: Math.max(1, Math.min(120, Math.round(record.round))),
+      score: cleanScore,
       reviewScore: Math.max(0, Math.min(100, Math.round(record.reviewScore))),
       currentRoundScore: Math.max(
         0,
         Math.min(100, Math.round(record.currentRoundScore))
       ),
+      levelLabel: levelLabel.slice(0, 20),
+      passStatus: computedPassStatus,
       fullTimestamp: record.fullTimestamp.slice(0, 30),
       dateOnly: record.dateOnly.slice(0, 15),
       timeOnly: record.timeOnly.slice(0, 15),
@@ -146,11 +178,11 @@ export async function savePassToCloudSpreadsheet(record: Omit<CloudPassRecord, '
   }
 
   // Also ensure the student is in roster_members
-  const memberId = makeRosterId(record.name);
+  const memberId = makeRosterId(baseName);
   const rosterPath = `roster_members/${memberId}`;
   try {
     await setDoc(doc(db, 'roster_members', memberId), {
-      name: record.name.trim().slice(0, 60),
+      name: baseName.slice(0, 60),
       active: 'Y',
     });
   } catch (error) {
@@ -193,13 +225,24 @@ export function subscribePassRecords(
     (snapshot) => {
       const list: CloudPassRecord[] = snapshot.docs.map((d) => {
         const data = d.data();
+        const { baseName, levelLabel } = parseNameAndLevel(
+          String(data.name || ''),
+          data.levelLabel ? String(data.levelLabel) : undefined
+        );
+        const numericScore = Number(data.score ?? 80);
+        const passStatus: '합격' | '불합격' =
+          data.passStatus === '불합격' || numericScore < 80
+            ? '불합격'
+            : '합격';
         return {
           id: d.id,
-          name: String(data.name || ''),
+          name: baseName,
           round: Number(data.round || 1),
-          score: Number(data.score || 80),
+          score: numericScore,
           reviewScore: Number(data.reviewScore || 0),
           currentRoundScore: Number(data.currentRoundScore || 0),
+          levelLabel,
+          passStatus,
           fullTimestamp: String(data.fullTimestamp || ''),
           dateOnly: String(data.dateOnly || ''),
           timeOnly: String(data.timeOnly || ''),
