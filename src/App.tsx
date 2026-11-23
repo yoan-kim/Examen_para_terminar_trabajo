@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -19,9 +19,14 @@ import {
   Sparkles,
   Volume2,
   VolumeX,
+  Layers,
 } from 'lucide-react';
 import { AppLanguage, I18N } from './data/i18n';
-import { VOCAB_DATABASE, TOTAL_ROUNDS } from './data/vocabData';
+import {
+  StudyLevel,
+  LEVEL_CONFIGS,
+  getVocabDatabaseByLevel,
+} from './data/vocabData';
 import { initEcuadorTTS } from './utils/tts';
 import { useAdvancedStudy } from './utils/advancedStudy';
 import { useSoundEffects } from './utils/soundEffects';
@@ -31,11 +36,16 @@ import { FocusStudyView } from './components/FocusStudyView';
 import { ExamView } from './components/ExamView';
 import { ShortcutModal } from './components/ShortcutModal';
 import { FireworksOverlay } from './components/FireworksOverlay';
+import { LiveSheetView } from './components/LiveSheetView';
+import { LevelSelectView } from './components/LevelSelectView';
 
 type ActiveTab = 'speed' | 'write' | 'list' | 'focus' | 'exam';
 
 const FOCUS_STORAGE_KEY = 'es_focus_ids_v3';
 const SCORES_STORAGE_KEY = 'es_round_best_scores_v1';
+const LEVEL_SCORES_STORAGE_KEY = 'es_level_round_scores_v2';
+const LEVEL_ROUNDS_STORAGE_KEY = 'es_level_current_round_v1';
+const LAST_LEVEL_STORAGE_KEY = 'es_selected_study_level_v1';
 const THEME_STORAGE_KEY = 'es_master_theme_v1';
 
 export default function App() {
@@ -48,10 +58,95 @@ export default function App() {
     }
   });
 
-  const [currentRound, setCurrentRound] = useState<number>(1);
+  // Always show Level Selection View on initial app entry so the user can choose Beginner / Intermediate / Advanced
+  const [levelSelectedInSession, setLevelSelectedInSession] =
+    useState<boolean>(false);
+
+  const [studyLevel, setStudyLevel] = useState<StudyLevel>(() => {
+    try {
+      const saved = localStorage.getItem(LAST_LEVEL_STORAGE_KEY);
+      if (
+        saved === 'beginner' ||
+        saved === 'intermediate' ||
+        saved === 'advanced'
+      ) {
+        return saved;
+      }
+    } catch {
+      // ignore
+    }
+    return 'advanced';
+  });
+
+  // Track current round per level independently
+  const [levelRoundsMap, setLevelRoundsMap] = useState<
+    Record<StudyLevel, number>
+  >(() => {
+    try {
+      const raw = localStorage.getItem(LEVEL_ROUNDS_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return {
+          beginner: parsed.beginner || 1,
+          intermediate: parsed.intermediate || 1,
+          advanced: parsed.advanced || 1,
+        };
+      }
+    } catch {
+      // ignore
+    }
+    return {
+      beginner: 1,
+      intermediate: 1,
+      advanced: 1,
+    };
+  });
+
+  const currentRound = levelRoundsMap[studyLevel] || 1;
+  const levelConfig = LEVEL_CONFIGS[studyLevel];
+  const totalRoundsForLevel = levelConfig.totalRounds;
+  const roundDatabase = useMemo(
+    () => getVocabDatabaseByLevel(studyLevel),
+    [studyLevel]
+  );
+
+  const setCurrentRound = useCallback(
+    (nextRoundOrUpdater: number | ((prev: number) => number)) => {
+      setLevelRoundsMap((prevMap) => {
+        const prevRound = prevMap[studyLevel] || 1;
+        const rawNext =
+          typeof nextRoundOrUpdater === 'function'
+            ? nextRoundOrUpdater(prevRound)
+            : nextRoundOrUpdater;
+        const clamped = Math.max(
+          1,
+          Math.min(LEVEL_CONFIGS[studyLevel].totalRounds, rawNext)
+        );
+        const updated = { ...prevMap, [studyLevel]: clamped };
+        try {
+          localStorage.setItem(
+            LEVEL_ROUNDS_STORAGE_KEY,
+            JSON.stringify(updated)
+          );
+        } catch {
+          // ignore
+        }
+        return updated;
+      });
+    },
+    [studyLevel]
+  );
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('speed');
   const [shuffleSeed, setShuffleSeed] = useState<number>(0);
   const [shortcutOpen, setShortcutOpen] = useState<boolean>(false);
+  const [isSheetRoute, setIsSheetRoute] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.location.search.includes('sheet=1') ||
+      window.location.hash.includes('sheet')
+    );
+  });
   const { isAdvancedMode, toggleAdvancedMode } = useAdvancedStudy();
   const { sfxEnabled, toggleSfx } = useSoundEffects();
 
@@ -65,15 +160,38 @@ export default function App() {
     }
   });
 
-  // Persisted Best Exam Scores per Round
-  const [roundScores, setRoundScores] = useState<Record<number, number>>(() => {
+  // Persisted Best Exam Scores per Level & Round
+  const [levelScoresMap, setLevelScoresMap] = useState<
+    Record<StudyLevel, Record<number, number>>
+  >(() => {
     try {
-      const raw = localStorage.getItem(SCORES_STORAGE_KEY);
-      return raw ? JSON.parse(raw) : {};
+      const rawV2 = localStorage.getItem(LEVEL_SCORES_STORAGE_KEY);
+      if (rawV2) {
+        const parsed = JSON.parse(rawV2);
+        return {
+          beginner: parsed.beginner || {},
+          intermediate: parsed.intermediate || {},
+          advanced: parsed.advanced || {},
+        };
+      }
+      // Migrate legacy v1 scores into advanced (20 words/round)
+      const legacyV1 = localStorage.getItem(SCORES_STORAGE_KEY);
+      const advScores = legacyV1 ? JSON.parse(legacyV1) : {};
+      return {
+        beginner: {},
+        intermediate: {},
+        advanced: advScores,
+      };
     } catch {
-      return {};
+      return {
+        beginner: {},
+        intermediate: {},
+        advanced: {},
+      };
     }
   });
+
+  const roundScores = levelScoresMap[studyLevel] || {};
 
   // Initialize Ecuadorian TTS on mount
   useEffect(() => {
@@ -99,6 +217,17 @@ export default function App() {
     }
   }, [isDark]);
 
+  const handleSelectLevel = useCallback((lv: StudyLevel) => {
+    setStudyLevel(lv);
+    setLevelSelectedInSession(true);
+    setShuffleSeed((prev) => prev + 1);
+    try {
+      localStorage.setItem(LAST_LEVEL_STORAGE_KEY, lv);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const handleToggleFocus = useCallback((wordId: number) => {
     setFocusIds((prev) => {
       const next = prev.includes(wordId)
@@ -122,26 +251,40 @@ export default function App() {
     }
   }, []);
 
-  const handleSaveRoundScore = useCallback((round: number, score: number) => {
-    setRoundScores((prev) => {
-      const prevBest = prev[round] ?? -1;
-      if (score <= prevBest) return prev;
-      const next = { ...prev, [round]: score };
-      try {
-        localStorage.setItem(SCORES_STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
-  }, []);
+  const handleSaveRoundScore = useCallback(
+    (round: number, score: number) => {
+      setLevelScoresMap((prevMap) => {
+        const curLevelScores = prevMap[studyLevel] || {};
+        const prevBest = curLevelScores[round] ?? -1;
+        if (score <= prevBest) return prevMap;
+        const nextLevelScores = { ...curLevelScores, [round]: score };
+        const nextMap = { ...prevMap, [studyLevel]: nextLevelScores };
+        try {
+          localStorage.setItem(
+            LEVEL_SCORES_STORAGE_KEY,
+            JSON.stringify(nextMap)
+          );
+        } catch {
+          // ignore
+        }
+        return nextMap;
+      });
+    },
+    [studyLevel]
+  );
 
-  const stepRound = useCallback((delta: number) => {
-    setCurrentRound((prev) => Math.max(1, Math.min(TOTAL_ROUNDS, prev + delta)));
-  }, []);
+  const stepRound = useCallback(
+    (delta: number) => {
+      setCurrentRound((prev) =>
+        Math.max(1, Math.min(totalRoundsForLevel, prev + delta))
+      );
+    },
+    [setCurrentRound, totalRoundsForLevel]
+  );
 
   // Global [ and ] round navigation shortcuts
   useEffect(() => {
+    if (!levelSelectedInSession) return;
     const onKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
       const isTyping =
@@ -159,10 +302,10 @@ export default function App() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [stepRound]);
+  }, [stepRound, levelSelectedInSession]);
 
   const t = I18N[lang];
-  const currentRoundWords = VOCAB_DATABASE[currentRound]?.words || [];
+  const currentRoundWords = roundDatabase[currentRound]?.words || [];
 
   const tabs: {
     id: ActiveTab;
@@ -173,7 +316,7 @@ export default function App() {
     {
       id: 'speed',
       label: t.tabSpeed,
-      tooltip: '스피드 4지선다 퀴즈 모드 (40문제)',
+      tooltip: `스피드 4지선다 퀴즈 모드 (${levelConfig.quizQuestionsPerRound}문제)`,
       icon: <Zap className="w-4 h-4" />,
     },
     {
@@ -202,6 +345,19 @@ export default function App() {
     },
   ];
 
+  if (isSheetRoute) {
+    return (
+      <div className={isDark ? 'dark' : ''}>
+        <LiveSheetView
+          onBackToApp={() => {
+            window.history.replaceState(null, '', window.location.pathname);
+            setIsSheetRoute(false);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       className={`${
@@ -210,19 +366,53 @@ export default function App() {
     >
       {/* Top Bar */}
       <header className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           {/* Brand Title */}
           <div className="min-w-0">
-            <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white truncate">
-              {t.appTitle}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1
+                onClick={() => setLevelSelectedInSession(false)}
+                title="클릭하여 레벨 선택 화면으로 이동"
+                className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white truncate cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              >
+                {t.appTitle}
+              </h1>
+              {levelSelectedInSession && (
+                <button
+                  type="button"
+                  onClick={() => setLevelSelectedInSession(false)}
+                  title="클릭하여 초급 / 중급 / 고급 레벨 변경하기"
+                  className="px-2.5 py-0.5 rounded-lg border border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-xs font-extrabold inline-flex items-center gap-1 shrink-0 cursor-pointer transition-colors"
+                >
+                  <span>{levelConfig.badgeIcon}</span>
+                  <span>
+                    {levelConfig.labelKo} ({levelConfig.wordsPerRound}단어)
+                  </span>
+                  <Layers className="w-3 h-3 ml-0.5 opacity-75" />
+                </button>
+              )}
+            </div>
             <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
-              {t.appSubtitle}
+              {levelSelectedInSession
+                ? `[${levelConfig.labelKo}] 1회차부터 ${totalRoundsForLevel}회차까지 핵심 1200단어 완전 정복 (회차당 ${levelConfig.wordsPerRound}단어)`
+                : t.appSubtitle}
             </p>
           </div>
 
-          {/* Right Controls: Sound Toggle, Theme Toggle, Shortcuts, Advanced Mode */}
+          {/* Right Controls: Level Switcher, Sound Toggle, Theme Toggle, Shortcuts, Advanced Mode */}
           <div className="flex items-center gap-2 shrink-0">
+            {levelSelectedInSession && (
+              <button
+                type="button"
+                onClick={() => setLevelSelectedInSession(false)}
+                title="초급(10단어) · 중급(15단어) · 고급(20단어) 레벨 변경"
+                className="min-h-[38px] px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-extrabold hidden sm:inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+              >
+                <Layers className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span>레벨 변경</span>
+              </button>
+            )}
+
             {/* Sound Effects Toggle */}
             <button
               type="button"
@@ -263,7 +453,7 @@ export default function App() {
               className="min-h-[38px] px-3 py-1.5 rounded-xl border border-indigo-500/60 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-extrabold inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
             >
               <Keyboard className="w-4 h-4" />
-              <span>{t.shortcutBtn}</span>
+              <span className="hidden md:inline">{t.shortcutBtn}</span>
             </button>
 
             {/* Advanced Study Feature Toggle Button */}
@@ -297,211 +487,239 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Content Container (2-Column on Desktop, Single-Column on Mobile) */}
-      <main className="max-w-6xl w-full mx-auto px-4 py-5 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Sidebar on Desktop: 30 Rounds Progress & Quick Jump */}
-        <aside className="hidden lg:flex lg:col-span-4 flex-col gap-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-            <h2 className="text-sm font-extrabold text-slate-900 dark:text-white">
-              {t.roundSidebarTitle}
-            </h2>
-            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-              {t.ecuadorBadge}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 max-h-[68vh] overflow-y-auto pr-1">
-            {Array.from({ length: TOTAL_ROUNDS }, (_, i) => i + 1).map((r) => {
-              const best = roundScores[r];
-              const isPassed = best !== undefined && best >= 80;
-              const isSelected = r === currentRound;
-
-              return (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setCurrentRound(r)}
-                  title={`${r}회차 선택`}
-                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-2 ${
-                    isSelected
-                      ? 'border-indigo-600 bg-indigo-50/90 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200 font-extrabold'
-                      : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300'
-                  }`}
-                >
-                  <span className="text-xs font-extrabold font-mono tabular-nums">
-                    {t.roundBadgeText(r)}
-                  </span>
-                  {best !== undefined ? (
-                    <span
-                      className={`text-[11px] font-extrabold font-mono tabular-nums inline-flex items-center gap-1 ${
-                        isPassed
-                          ? 'text-emerald-600 dark:text-emerald-400'
-                          : 'text-amber-600 dark:text-amber-400'
-                      }`}
-                    >
-                      {isPassed && <CheckCircle2 className="w-3 h-3" />}
-                      {t.roundBestScore(best)}
-                    </span>
-                  ) : (
-                    <span className="text-[11px] text-slate-400 dark:text-slate-500">
-                      {t.roundNoRecord}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </aside>
-
-        {/* Right / Main Study Stage */}
-        <section className="lg:col-span-8 flex flex-col gap-3.5">
-          {/* 30-Round Navigation Bar */}
-          <div className="flex items-center justify-between gap-2 bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => stepRound(-1)}
-              disabled={currentRound <= 1}
-              title={t.prevRoundTooltip}
-              className="min-h-[42px] px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400 text-xs sm:text-sm font-extrabold inline-flex items-center gap-1 cursor-pointer disabled:opacity-40 whitespace-nowrap"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>{t.prevRound}</span>
-            </button>
-
-            <select
-              value={currentRound}
-              onChange={(e) => setCurrentRound(parseInt(e.target.value, 10))}
-              title={`학습 회차 선택 (1회 ~ ${TOTAL_ROUNDS}회)`}
-              className="flex-1 min-h-[42px] px-3 py-2 rounded-xl border-2 border-indigo-600 dark:border-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-extrabold text-sm sm:text-base text-center outline-none cursor-pointer"
-            >
-              {Array.from({ length: TOTAL_ROUNDS }, (_, i) => i + 1).map((r) => (
-                <option key={r} value={r}>
-                  {t.roundOptionLabel(r)}
-                </option>
-              ))}
-            </select>
-
-            <button
-              type="button"
-              onClick={() => stepRound(1)}
-              disabled={currentRound >= TOTAL_ROUNDS}
-              title={t.nextRoundTooltip}
-              className="min-h-[42px] px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400 text-xs sm:text-sm font-extrabold inline-flex items-center gap-1 cursor-pointer disabled:opacity-40 whitespace-nowrap"
-            >
-              <span>{t.nextRound}</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* 5 Mode Tabs */}
-          <div className="grid grid-cols-5 gap-1 p-1 rounded-2xl bg-slate-200/90 dark:bg-slate-800">
-            {tabs.map((tab) => {
-              const active = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    setShuffleSeed((prev) => prev + 1);
-                  }}
-                  title={tab.tooltip}
-                  className={`min-h-[42px] px-1.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                    active
-                      ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <span className="hidden sm:inline-flex">{tab.icon}</span>
-                  <span className="truncate">{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {isAdvancedMode && (
-            <div className="rounded-xl bg-slate-900 dark:bg-indigo-950/80 border border-slate-800 dark:border-indigo-700 px-4 py-2.5 flex items-center justify-between gap-2 text-xs font-extrabold text-white">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
+      {/* Initial Entry: Level Selection Gate (Beginner 10 / Intermediate 15 / Advanced 20) */}
+      {!levelSelectedInSession ? (
+        <main className="flex-1 flex items-center justify-center">
+          <LevelSelectView
+            currentLevel={studyLevel}
+            onSelectLevel={handleSelectLevel}
+            levelScoresMap={levelScoresMap}
+          />
+        </main>
+      ) : (
+        /* Main Study Workspace */
+        <main className="max-w-6xl w-full mx-auto px-4 py-5 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Sidebar on Desktop: Rounds Progress & Quick Jump */}
+          <aside className="hidden lg:flex lg:col-span-4 flex-col gap-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <h2 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span>{levelConfig.badgeIcon}</span>
                 <span>
-                  고급학습기능 활성화됨 — 각 단어의 정답 확인 후 나만의 &apos;암기팁 노트&apos;를 단어별로 기록할 수 있습니다.
+                  {levelConfig.labelKo} 회차별 현황 (1~{totalRoundsForLevel}회)
                 </span>
-              </div>
+              </h2>
               <button
                 type="button"
-                onClick={toggleAdvancedMode}
-                className="px-2 py-0.5 rounded-md bg-white/15 hover:bg-white/25 text-[11px] font-bold shrink-0 cursor-pointer"
+                onClick={() => setLevelSelectedInSession(false)}
+                className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
               >
-                끄기
+                레벨 변경
               </button>
             </div>
-          )}
 
-          {/* Active View Card */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-xs">
-            {activeTab === 'speed' && (
-              <QuizEngine
-                mode="speed"
-                wordsPool={currentRoundWords}
-                lang={lang}
-                focusIds={focusIds}
-                onToggleFocus={handleToggleFocus}
-                isActiveView={activeTab === 'speed' && !shortcutOpen}
-                shuffleSeed={shuffleSeed}
-                onCompleteAllQuestions={() => {
-                  setActiveTab('write');
-                  setShuffleSeed((prev) => prev + 1);
-                }}
-              />
+            <div className="grid grid-cols-2 gap-2 max-h-[68vh] overflow-y-auto pr-1">
+              {Array.from({ length: totalRoundsForLevel }, (_, i) => i + 1).map(
+                (r) => {
+                  const best = roundScores[r];
+                  const isPassed = best !== undefined && best >= 80;
+                  const isSelected = r === currentRound;
+
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setCurrentRound(r)}
+                      title={`[${levelConfig.labelKo}] ${r}회차 선택`}
+                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                        isSelected
+                          ? 'border-indigo-600 bg-indigo-50/90 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200 font-extrabold'
+                          : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      <span className="text-xs font-extrabold font-mono tabular-nums">
+                        {t.roundBadgeText(r)}
+                      </span>
+                      {best !== undefined ? (
+                        <span
+                          className={`text-[11px] font-extrabold font-mono tabular-nums inline-flex items-center gap-1 ${
+                            isPassed
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : 'text-amber-600 dark:text-amber-400'
+                          }`}
+                        >
+                          {isPassed && <CheckCircle2 className="w-3 h-3" />}
+                          {t.roundBestScore(best)}
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                          {t.roundNoRecord}
+                        </span>
+                      )}
+                    </button>
+                  );
+                }
+              )}
+            </div>
+          </aside>
+
+          {/* Right / Main Study Stage */}
+          <section className="lg:col-span-8 flex flex-col gap-3.5">
+            {/* Round Navigation Bar */}
+            <div className="flex items-center justify-between gap-2 bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => stepRound(-1)}
+                disabled={currentRound <= 1}
+                title={t.prevRoundTooltip}
+                className="min-h-[42px] px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400 text-xs sm:text-sm font-extrabold inline-flex items-center gap-1 cursor-pointer disabled:opacity-40 whitespace-nowrap"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>{t.prevRound}</span>
+              </button>
+
+              <select
+                value={currentRound}
+                onChange={(e) => setCurrentRound(parseInt(e.target.value, 10))}
+                title={`[${levelConfig.labelKo}] 학습 회차 선택 (1회 ~ ${totalRoundsForLevel}회)`}
+                className="flex-1 min-h-[42px] px-3 py-2 rounded-xl border-2 border-indigo-600 dark:border-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-extrabold text-sm sm:text-base text-center outline-none cursor-pointer"
+              >
+                {Array.from(
+                  { length: totalRoundsForLevel },
+                  (_, i) => i + 1
+                ).map((r) => (
+                  <option key={r} value={r}>
+                    [{levelConfig.labelKo}] {r}회차 ({levelConfig.wordsPerRound}
+                    단어)
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                onClick={() => stepRound(1)}
+                disabled={currentRound >= totalRoundsForLevel}
+                title={t.nextRoundTooltip}
+                className="min-h-[42px] px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400 text-xs sm:text-sm font-extrabold inline-flex items-center gap-1 cursor-pointer disabled:opacity-40 whitespace-nowrap"
+              >
+                <span>{t.nextRound}</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* 5 Mode Tabs */}
+            <div className="grid grid-cols-5 gap-1 p-1 rounded-2xl bg-slate-200/90 dark:bg-slate-800">
+              {tabs.map((tab) => {
+                const active = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setShuffleSeed((prev) => prev + 1);
+                    }}
+                    title={tab.tooltip}
+                    className={`min-h-[42px] px-1.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                      active
+                        ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <span className="hidden sm:inline-flex">{tab.icon}</span>
+                    <span className="truncate">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {isAdvancedMode && (
+              <div className="rounded-xl bg-slate-900 dark:bg-indigo-950/80 border border-slate-800 dark:border-indigo-700 px-4 py-2.5 flex items-center justify-between gap-2 text-xs font-extrabold text-white">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
+                  <span>
+                    고급학습기능 활성화됨 — 각 단어의 정답 확인 후 나만의
+                    &apos;암기팁 노트&apos;를 단어별로 기록할 수 있습니다.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleAdvancedMode}
+                  className="px-2 py-0.5 rounded-md bg-white/15 hover:bg-white/25 text-[11px] font-bold shrink-0 cursor-pointer"
+                >
+                  끄기
+                </button>
+              </div>
             )}
 
-            {activeTab === 'write' && (
-              <QuizEngine
-                mode="write"
-                wordsPool={currentRoundWords}
-                lang={lang}
-                focusIds={focusIds}
-                onToggleFocus={handleToggleFocus}
-                isActiveView={activeTab === 'write' && !shortcutOpen}
-                shuffleSeed={shuffleSeed}
-                onCompleteAllQuestions={() => {
-                  setShuffleSeed((prev) => prev + 1);
-                }}
-              />
-            )}
+            {/* Active View Card */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-xs">
+              {activeTab === 'speed' && (
+                <QuizEngine
+                  mode="speed"
+                  wordsPool={currentRoundWords}
+                  lang={lang}
+                  focusIds={focusIds}
+                  onToggleFocus={handleToggleFocus}
+                  isActiveView={activeTab === 'speed' && !shortcutOpen}
+                  shuffleSeed={shuffleSeed}
+                  onCompleteAllQuestions={() => {
+                    setActiveTab('write');
+                    setShuffleSeed((prev) => prev + 1);
+                  }}
+                />
+              )}
 
-            {activeTab === 'list' && (
-              <VocabListView
-                currentRound={currentRound}
-                lang={lang}
-                focusIds={focusIds}
-                onToggleFocus={handleToggleFocus}
-              />
-            )}
+              {activeTab === 'write' && (
+                <QuizEngine
+                  mode="write"
+                  wordsPool={currentRoundWords}
+                  lang={lang}
+                  focusIds={focusIds}
+                  onToggleFocus={handleToggleFocus}
+                  isActiveView={activeTab === 'write' && !shortcutOpen}
+                  shuffleSeed={shuffleSeed}
+                  onCompleteAllQuestions={() => {
+                    setShuffleSeed((prev) => prev + 1);
+                  }}
+                />
+              )}
 
-            {activeTab === 'focus' && (
-              <FocusStudyView
-                lang={lang}
-                focusIds={focusIds}
-                onToggleFocus={handleToggleFocus}
-                onClearAllFocus={handleClearAllFocus}
-                isActiveView={activeTab === 'focus' && !shortcutOpen}
-              />
-            )}
+              {activeTab === 'list' && (
+                <VocabListView
+                  currentRound={currentRound}
+                  roundDatabase={roundDatabase}
+                  lang={lang}
+                  focusIds={focusIds}
+                  onToggleFocus={handleToggleFocus}
+                />
+              )}
 
-            {activeTab === 'exam' && (
-              <ExamView
-                currentRound={currentRound}
-                lang={lang}
-                focusIds={focusIds}
-                onToggleFocus={handleToggleFocus}
-                onSaveRoundScore={handleSaveRoundScore}
-                isActiveView={activeTab === 'exam' && !shortcutOpen}
-              />
-            )}
-          </div>
-        </section>
-      </main>
+              {activeTab === 'focus' && (
+                <FocusStudyView
+                  lang={lang}
+                  focusIds={focusIds}
+                  onToggleFocus={handleToggleFocus}
+                  onClearAllFocus={handleClearAllFocus}
+                  isActiveView={activeTab === 'focus' && !shortcutOpen}
+                />
+              )}
+
+              {activeTab === 'exam' && (
+                <ExamView
+                  currentRound={currentRound}
+                  studyLevel={studyLevel}
+                  roundDatabase={roundDatabase}
+                  lang={lang}
+                  focusIds={focusIds}
+                  onToggleFocus={handleToggleFocus}
+                  onSaveRoundScore={handleSaveRoundScore}
+                  isActiveView={activeTab === 'exam' && !shortcutOpen}
+                />
+              )}
+            </div>
+          </section>
+        </main>
+      )}
 
       {/* Shortcut Guide Modal */}
       <ShortcutModal

@@ -413,7 +413,7 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
           ? customBanner
           : isFocusQuiz
           ? t.bannerFocusQuiz(wordsPool.length)
-          : t.banner40Questions}
+          : `💡 ${wordsPool.length}단어에 대해 한➔스(${wordsPool.length}개), 스➔한(${wordsPool.length}개) 총 ${wordsPool.length * 2}문제가 제공됩니다.`}
       </div>
 
       {/* Progress Bar */}

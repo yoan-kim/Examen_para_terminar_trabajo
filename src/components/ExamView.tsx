@@ -12,10 +12,14 @@ import {
   AlertTriangle,
   RotateCcw,
   Sparkles,
+  Send,
 } from 'lucide-react';
 import { AppLanguage, I18N } from '../data/i18n';
 import {
   VocabWord,
+  RoundData,
+  StudyLevel,
+  LEVEL_CONFIGS,
   VOCAB_DATABASE,
   ALL_WORDS_LIST,
   getWordDisplay,
@@ -32,6 +36,11 @@ import { triggerFireworks } from './FireworksOverlay';
 import { EtymologyPromptBox } from './EtymologyPromptBox';
 import { WrongNoteModal } from './WrongNoteModal';
 import { WordTipNoteBox } from './WordTipNoteBox';
+import {
+  getSavedStudentName,
+  setSavedStudentName,
+  submitExamPassToTelegramAndSheet,
+} from '../utils/telegramSheetSync';
 
 type ExamQuestionType =
   | 'meaning-to-term-write'
@@ -56,6 +65,8 @@ interface WrongRecord {
 
 interface ExamViewProps {
   currentRound: number;
+  studyLevel?: StudyLevel;
+  roundDatabase?: Record<number, RoundData>;
   lang: AppLanguage;
   focusIds: number[];
   onToggleFocus: (wordId: number) => void;
@@ -76,6 +87,8 @@ const TILDE_CHARS = ['á', 'é', 'í', 'ó', 'ú', 'ñ', '/'];
 
 export const ExamView: React.FC<ExamViewProps> = ({
   currentRound,
+  studyLevel = 'advanced',
+  roundDatabase = VOCAB_DATABASE,
   lang,
   focusIds,
   onToggleFocus,
@@ -83,6 +96,7 @@ export const ExamView: React.FC<ExamViewProps> = ({
   isActiveView,
 }) => {
   const t = I18N[lang];
+  const levelConfig = LEVEL_CONFIGS[studyLevel];
   const [stage, setStage] = useState<'intro' | 'playing' | 'result'>('intro');
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -100,11 +114,26 @@ export const ExamView: React.FC<ExamViewProps> = ({
   const [wrongList, setWrongList] = useState<WrongRecord[]>([]);
   const [wrongNoteOpen, setWrongNoteOpen] = useState(false);
 
-  // Reset to intro when round or language changes
+  // Telegram & Google Sheet Pass Submission State
+  const [passPanelOpen, setPassPanelOpen] = useState(false);
+  const [studentName, setStudentName] = useState<string>(() =>
+    getSavedStudentName()
+  );
+  const [submittingPass, setSubmittingPass] = useState(false);
+  const [passSentInfo, setPassSentInfo] = useState<{
+    ok: boolean;
+    timestamp?: string;
+    status?: string;
+    msg: string;
+  } | null>(null);
+
+  // Reset to intro when round, level, or language changes
   useEffect(() => {
     setStage('intro');
     setWrongNoteOpen(false);
-  }, [currentRound, lang]);
+    setPassPanelOpen(false);
+    setPassSentInfo(null);
+  }, [currentRound, studyLevel, lang]);
 
   const startExamSession = () => {
     const types: ExamQuestionType[] = [
@@ -126,7 +155,7 @@ export const ExamView: React.FC<ExamViewProps> = ({
     if (currentRound > 1) {
       let prevPool: VocabWord[] = [];
       for (let r = 1; r < currentRound; r++) {
-        prevPool = prevPool.concat(VOCAB_DATABASE[r]?.words || []);
+        prevPool = prevPool.concat(roundDatabase[r]?.words || []);
       }
       // Filter cumulative review pool: exclude multi-word expressions (2+ Spanish words)
       // and include only 1:1 single Spanish word to single Korean meaning items.
@@ -158,7 +187,7 @@ export const ExamView: React.FC<ExamViewProps> = ({
         });
     }
 
-    const curPool = VOCAB_DATABASE[currentRound]?.words || [];
+    const curPool = roundDatabase[currentRound]?.words || [];
     shuffleArray(curPool)
       .slice(0, 10)
       .forEach((w, i) => {
@@ -178,6 +207,8 @@ export const ExamView: React.FC<ExamViewProps> = ({
     setCurrentRoundScore(0);
     setWrongList([]);
     setWrongNoteOpen(false);
+    setPassPanelOpen(false);
+    setPassSentInfo(null);
     setStepAnswered(false);
     setStepCorrect(false);
     setStepMissingTilde(false);
@@ -396,8 +427,18 @@ export const ExamView: React.FC<ExamViewProps> = ({
   if (stage === 'intro') {
     const rules =
       currentRound === 1
-        ? t.examRuleRound1
-        : t.examRuleCumulative(currentRound);
+        ? [
+            `시험 범위: [${levelConfig.labelKo}] 1회차 전체 ${levelConfig.wordsPerRound}단어 중 10문제 무작위 출제`,
+            '출제 구성: 쓰기(한⇄스) + 객관식(한⇄스) 양방향 혼합 출제',
+            '배점 및 합격 기준: 문항당 10점 / 80점 이상 시 퇴근 가능!',
+            '편법 방지: 실전 시험 중에는 힌트·이전단어·다시풀기가 금지됩니다.',
+          ]
+        : [
+            `1단계 (누적 복습 10문항): [${levelConfig.labelKo}] 1~${currentRound - 1}회차 누적 1:1 단일 단어에서 무작위 10문제 추출 (2단어 이상 숙어 제외)`,
+            `2단계 (금회차 본시험 10문항): [${levelConfig.labelKo}] ${currentRound}회차(${levelConfig.wordsPerRound}단어)에서 무작위 10문제 추출`,
+            '총 문항 수: 20문항 (문항당 5점 / 80점 이상 시 퇴근 가능!)',
+            '편법 방지: 실전 시험 중에는 힌트·이전단어·다시풀기가 금지됩니다.',
+          ];
 
     return (
       <div className="py-6 px-2 text-center flex flex-col items-center gap-4">
@@ -407,6 +448,7 @@ export const ExamView: React.FC<ExamViewProps> = ({
 
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
+            [{levelConfig.badgeIcon} {levelConfig.labelKo}]{' '}
             {t.examIntroTitle(currentRound)}
           </h2>
           <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">
@@ -445,7 +487,7 @@ export const ExamView: React.FC<ExamViewProps> = ({
       <div className="flex flex-col gap-5">
         <div className="rounded-2xl border-2 border-indigo-600 dark:border-indigo-500 bg-white dark:bg-slate-900 p-6 text-center">
           <p className="text-base sm:text-lg font-extrabold text-slate-600 dark:text-slate-300">
-            {currentRound}회차 {t.examFinalScoreLabel}
+            [{levelConfig.labelKo}] {currentRound}회차 {t.examFinalScoreLabel}
           </p>
 
           <div className="text-5xl font-black text-indigo-600 dark:text-indigo-400 font-mono tabular-nums my-3">
@@ -499,6 +541,133 @@ export const ExamView: React.FC<ExamViewProps> = ({
               </strong>
             </div>
           </div>
+
+          {/* Send Pass Message Directly to Telegram Topic Room (shown when passed >= 80) */}
+          {passed && (
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 text-left">
+              {!passPanelOpen ? (
+                <button
+                  type="button"
+                  onClick={() => setPassPanelOpen(true)}
+                  title="클릭하여 이름을 입력하고 퇴근스페인어 텔레그램 방에 합격 메시지 보내기"
+                  className="w-full min-h-[48px] py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>🎉 합격 메시지 보내기</span>
+                </button>
+              ) : (
+                <div className="p-4 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border-2 border-emerald-500/80 space-y-3">
+                  <div className="text-xs sm:text-sm font-extrabold text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
+                    <Send className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>퇴근스페인어 방 합격 메시지 전송</span>
+                  </div>
+
+                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    이름을 입력하고 <strong>[전송]</strong>을 누르면{' '}
+                    <span className="text-emerald-700 dark:text-emerald-300 font-bold">
+                      &ldquo;🎉 {studentName.trim() || 'OOO'}님이 [{levelConfig.labelKo}]{' '}
+                      {currentRound}회차를 {totalScore}점으로 통과했습니다
+                      축하해주세요! 👏 (전송시간)&rdquo;
+                    </span>{' '}
+                    메시지가 퇴근스페인어 방에 즉시 전송됩니다.
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <input
+                      type="text"
+                      value={studentName}
+                      disabled={submittingPass || Boolean(passSentInfo?.ok)}
+                      onChange={(e) => setStudentName(e.target.value)}
+                      placeholder="이름을 입력하세요 (예: 홍길동)"
+                      className="flex-1 min-h-[44px] px-3.5 py-2 rounded-xl border-2 border-emerald-400 dark:border-emerald-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-extrabold outline-none focus:border-emerald-600 disabled:opacity-60"
+                    />
+
+                    <button
+                      type="button"
+                      disabled={
+                        submittingPass ||
+                        !studentName.trim() ||
+                        Boolean(passSentInfo?.ok)
+                      }
+                      onClick={async () => {
+                        const cleanName = studentName.trim();
+                        if (!cleanName) return;
+                        setSavedStudentName(cleanName);
+
+                        setSubmittingPass(true);
+                        setPassSentInfo(null);
+                        try {
+                          const { response, timestamp } =
+                            await submitExamPassToTelegramAndSheet({
+                              name: cleanName,
+                              round: currentRound,
+                              score: totalScore,
+                              reviewScore,
+                              currentRoundScore,
+                              levelLabel: levelConfig.labelKo,
+                            });
+                          setPassSentInfo({
+                            ok: response.ok,
+                            timestamp,
+                            status: response.status,
+                            msg:
+                              response.message ||
+                              (response.ok
+                                ? `전송 완료! (${timestamp})`
+                                : response.error || '전송에 실패했습니다.'),
+                          });
+                        } catch (err) {
+                          setPassSentInfo({
+                            ok: false,
+                            msg:
+                              err instanceof Error
+                                ? err.message
+                                : '전송 중 네트워크 오류가 발생했습니다.',
+                          });
+                        } finally {
+                          setSubmittingPass(false);
+                        }
+                      }}
+                      className="min-h-[44px] px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-extrabold text-sm inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>
+                        {submittingPass
+                          ? '전송 중...'
+                          : passSentInfo?.ok
+                          ? '전송 완료됨'
+                          : '전송'}
+                      </span>
+                    </button>
+                  </div>
+
+                  {passSentInfo && (
+                    <div
+                      className={`p-3 rounded-xl border text-xs font-extrabold flex items-start gap-2 ${
+                        passSentInfo.ok
+                          ? 'bg-white dark:bg-slate-900 border-emerald-400 text-emerald-800 dark:text-emerald-300'
+                          : 'bg-rose-50 dark:bg-rose-950/60 border-rose-400 text-rose-800 dark:text-rose-200'
+                      }`}
+                    >
+                      {passSentInfo.ok ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                      )}
+                      <div className="space-y-0.5">
+                        <div>{passSentInfo.msg}</div>
+                        {passSentInfo.ok && passSentInfo.timestamp && (
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                            전송 시각(에콰도르): ({passSentInfo.timestamp})
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Recommended Yellow-Sparkling Wrong Note Tab (Optional Click) */}

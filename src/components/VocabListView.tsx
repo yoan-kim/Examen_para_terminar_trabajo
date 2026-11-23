@@ -3,6 +3,7 @@ import { Volume2, Search, Eye, EyeOff, Bookmark, X } from 'lucide-react';
 import { AppLanguage, I18N } from '../data/i18n';
 import {
   VocabWord,
+  RoundData,
   VOCAB_DATABASE,
   ALL_WORDS_LIST,
   getWordDisplay,
@@ -12,6 +13,7 @@ import { WordTipNoteBox } from './WordTipNoteBox';
 
 interface VocabListViewProps {
   currentRound: number;
+  roundDatabase?: Record<number, RoundData>;
   lang: AppLanguage;
   focusIds: number[];
   onToggleFocus: (wordId: number) => void;
@@ -19,6 +21,7 @@ interface VocabListViewProps {
 
 export const VocabListView: React.FC<VocabListViewProps> = ({
   currentRound,
+  roundDatabase = VOCAB_DATABASE,
   lang,
   focusIds,
   onToggleFocus,
@@ -40,7 +43,7 @@ export const VocabListView: React.FC<VocabListViewProps> = ({
     const basePool =
       searchScope === 'all'
         ? ALL_WORDS_LIST
-        : VOCAB_DATABASE[currentRound]?.words || [];
+        : roundDatabase[currentRound]?.words || [];
     const q = searchQuery.trim().toLowerCase();
     if (!q) return basePool;
 
@@ -51,7 +54,7 @@ export const VocabListView: React.FC<VocabListViewProps> = ({
         disp.meaning.toLowerCase().includes(q)
       );
     });
-  }, [currentRound, searchScope, searchQuery, lang]);
+  }, [currentRound, roundDatabase, searchScope, searchQuery, lang]);
 
   const isTermMasked = (id: number) =>
     maskTermAll && !unmaskedTermIds.includes(id);

@@ -1,0 +1,85 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidPassRecord(data) {
+      return data.keys().hasAll([
+        'name',
+        'round',
+        'score',
+        'reviewScore',
+        'currentRoundScore',
+        'fullTimestamp',
+        'dateOnly',
+        'timeOnly',
+        'deadlineTime',
+        'status'
+      ]) &&
+      data.keys().hasOnly([
+        'name',
+        'round',
+        'score',
+        'reviewScore',
+        'currentRoundScore',
+        'fullTimestamp',
+        'dateOnly',
+        'timeOnly',
+        'deadlineTime',
+        'status'
+      ]) &&
+      data.name is string && data.name.size() >= 1 && data.name.size() <= 60 &&
+      data.round is int && data.round >= 1 && data.round <= 60 &&
+      data.score is int && data.score >= 0 && data.score <= 100 &&
+      data.reviewScore is int && data.reviewScore >= 0 && data.reviewScore <= 100 &&
+      data.currentRoundScore is int && data.currentRoundScore >= 0 && data.currentRoundScore <= 100 &&
+      data.fullTimestamp is string && data.fullTimestamp.size() >= 10 && data.fullTimestamp.size() <= 30 &&
+      data.dateOnly is string && data.dateOnly.size() >= 10 && data.dateOnly.size() <= 15 &&
+      data.timeOnly is string && data.timeOnly.size() >= 5 && data.timeOnly.size() <= 15 &&
+      data.deadlineTime is string && data.deadlineTime.size() >= 4 && data.deadlineTime.size() <= 10 &&
+      data.status is string && (data.status == '정상' || data.status == '지각');
+    }
+
+    function isValidRosterMember(data) {
+      return data.keys().hasAll(['name', 'active']) &&
+      data.keys().hasOnly(['name', 'active']) &&
+      data.name is string && data.name.size() >= 1 && data.name.size() <= 60 &&
+      data.active is string && (data.active == 'Y' || data.active == 'N');
+    }
+
+    match /test/connection {
+      allow get: if true;
+    }
+
+    match /pass_records/{recordId} {
+      allow get: if isValidId(recordId);
+      allow list: if existing().score >= 0;
+      allow create: if isValidId(recordId) && isValidPassRecord(incoming());
+      allow update: if false;
+      allow delete: if isValidId(recordId);
+    }
+
+    match /roster_members/{memberId} {
+      allow get: if isValidId(memberId);
+      allow list: if existing().active == 'Y' || existing().active == 'N';
+      allow create: if isValidId(memberId) && isValidRosterMember(incoming());
+      allow update: if isValidId(memberId) && isValidRosterMember(incoming()) &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'active']);
+      allow delete: if isValidId(memberId);
+    }
+  }
+}

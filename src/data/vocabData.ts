@@ -201,3 +201,93 @@ export function isOneToOneReviewWord(word: VocabWord): boolean {
   const koClean = word.ko.trim();
   return !esClean.includes(" ") && !koClean.includes(",") && !koClean.includes("/");
 }
+
+export type StudyLevel = 'beginner' | 'intermediate' | 'advanced';
+
+export interface LevelConfig {
+  id: StudyLevel;
+  labelKo: string;
+  labelEs: string;
+  badgeIcon: string;
+  wordsPerRound: number;
+  totalRounds: number;
+  quizQuestionsPerRound: number;
+  description: string;
+  targetAudience: string;
+}
+
+export const LEVEL_CONFIGS: Record<StudyLevel, LevelConfig> = {
+  beginner: {
+    id: 'beginner',
+    labelKo: '초급',
+    labelEs: 'Principiante',
+    badgeIcon: '🌱',
+    wordsPerRound: 10,
+    totalRounds: 120,
+    quizQuestionsPerRound: 20,
+    description: '1회차당 10단어씩 가볍고 탄탄하게! 총 120회차 완성 코스',
+    targetAudience: '하루 부담 없이 10단어씩 확실하게 외우고 퇴근하고 싶은 분',
+  },
+  intermediate: {
+    id: 'intermediate',
+    labelKo: '중급',
+    labelEs: 'Intermedio',
+    badgeIcon: '🌿',
+    wordsPerRound: 15,
+    totalRounds: 80,
+    quizQuestionsPerRound: 30,
+    description: '1회차당 15단어씩 균형 잡힌 호흡! 총 80회차 완성 코스',
+    targetAudience: '적당한 긴장감으로 하루 15단어씩 꾸준히 실력을 높이고 싶은 분',
+  },
+  advanced: {
+    id: 'advanced',
+    labelKo: '고급',
+    labelEs: 'Avanzado',
+    badgeIcon: '🌳',
+    wordsPerRound: 20,
+    totalRounds: 60,
+    quizQuestionsPerRound: 40,
+    description: '1회차당 20단어씩 압축 정복! 총 60회차 마스터 코스',
+    targetAudience: '기존 정석 속도 그대로 하루 20단어씩 빠르게 완주하고 싶은 분',
+  },
+};
+
+const LEVEL_DB_CACHE: Partial<Record<StudyLevel, Record<number, RoundData>>> = {
+  advanced: VOCAB_DATABASE,
+};
+
+/**
+ * Dynamically partitions ALL_WORDS_LIST (1,200 words) into rounds based on the selected level:
+ * - beginner: 10 words/round -> 120 rounds
+ * - intermediate: 15 words/round -> 80 rounds
+ * - advanced: 20 words/round -> 60 rounds
+ */
+export function getVocabDatabaseByLevel(
+  level: StudyLevel
+): Record<number, RoundData> {
+  if (LEVEL_DB_CACHE[level]) {
+    return LEVEL_DB_CACHE[level]!;
+  }
+
+  const config = LEVEL_CONFIGS[level];
+  const { wordsPerRound, totalRounds } = config;
+  const db: Record<number, RoundData> = {};
+
+  for (let r = 1; r <= totalRounds; r++) {
+    const startIdx = (r - 1) * wordsPerRound;
+    const slice = ALL_WORDS_LIST.slice(startIdx, startIdx + wordsPerRound).map(
+      (w) => ({
+        ...w,
+        round: r,
+      })
+    );
+    db[r] = {
+      round: r,
+      words: slice,
+    };
+  }
+
+  LEVEL_DB_CACHE[level] = db;
+  return db;
+}
+

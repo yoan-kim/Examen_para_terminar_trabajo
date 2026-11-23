@@ -1,0 +1,105 @@
+{
+  "entities": {
+    "PassRecord": {
+      "title": "PassRecord",
+      "description": "A single exam pass submission record stored in the shared cloud spreadsheet.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Student name",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "round": {
+          "type": "number",
+          "description": "Exam round number (1 to 60)"
+        },
+        "score": {
+          "type": "number",
+          "description": "Final exam score (80 to 100)"
+        },
+        "reviewScore": {
+          "type": "number",
+          "description": "Cumulative review score"
+        },
+        "currentRoundScore": {
+          "type": "number",
+          "description": "Current round exam score"
+        },
+        "fullTimestamp": {
+          "type": "string",
+          "description": "Ecuador local timestamp YYYY-MM-DD HH:mm:ss",
+          "minLength": 10,
+          "maxLength": 30
+        },
+        "dateOnly": {
+          "type": "string",
+          "description": "Ecuador date YYYY-MM-DD",
+          "minLength": 10,
+          "maxLength": 15
+        },
+        "timeOnly": {
+          "type": "string",
+          "description": "Ecuador time HH:mm:ss",
+          "minLength": 5,
+          "maxLength": 15
+        },
+        "deadlineTime": {
+          "type": "string",
+          "description": "Deadline HH:mm",
+          "minLength": 4,
+          "maxLength": 10
+        },
+        "status": {
+          "type": "string",
+          "description": "Attendance status (정상 or 지각)",
+          "enum": ["정상", "지각"],
+          "minLength": 1,
+          "maxLength": 10
+        }
+      },
+      "required": [
+        "name",
+        "round",
+        "score",
+        "fullTimestamp",
+        "dateOnly",
+        "timeOnly",
+        "deadlineTime",
+        "status"
+      ]
+    },
+    "RosterMember": {
+      "title": "RosterMember",
+      "description": "A student registered in the class roster for missing/late tracking.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Student name",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "active": {
+          "type": "string",
+          "description": "Active flag Y or N",
+          "enum": ["Y", "N"],
+          "minLength": 1,
+          "maxLength": 2
+        }
+      },
+      "required": ["name", "active"]
+    }
+  },
+  "firestore": {
+    "/pass_records/{recordId}": {
+      "schema": { "$ref": "#/entities/PassRecord" },
+      "description": "Shared cloud spreadsheet rows for all exam pass records"
+    },
+    "/roster_members/{memberId}": {
+      "schema": { "$ref": "#/entities/RosterMember" },
+      "description": "Class roster members for calculating missing and late submissions"
+    }
+  }
+}
