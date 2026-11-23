@@ -22,6 +22,7 @@ import {
   getEcuadorTimestamp,
   sendTelegramMessageDirect,
   DEFAULT_DEADLINE_TIME,
+  PRESET_STUDENT_NAMES,
 } from '../utils/telegramSheetSync';
 
 interface LiveSheetViewProps {
@@ -56,6 +57,9 @@ export const LiveSheetView: React.FC<LiveSheetViewProps> = ({
     };
   }, []);
 
+  const normalizeStudentBaseName = (rawName: string) =>
+    rawName.replace(/\s*\([^)]*\)\s*$/, '').trim();
+
   // Compute per-student cumulative stats from all records
   const rosterStats = useMemo(() => {
     const map: Record<
@@ -70,7 +74,7 @@ export const LiveSheetView: React.FC<LiveSheetViewProps> = ({
     > = {};
 
     for (const r of records) {
-      const name = r.name.trim();
+      const name = normalizeStudentBaseName(r.name);
       if (!map[name]) {
         map[name] = {
           passCount: 0,
@@ -107,7 +111,7 @@ export const LiveSheetView: React.FC<LiveSheetViewProps> = ({
     const submittedNames = new Set<string>();
 
     for (const r of dayRecords) {
-      submittedNames.add(r.name.trim());
+      submittedNames.add(normalizeStudentBaseName(r.name));
       if (r.timeOnly.slice(0, 5) > deadlineTime) {
         lateList.push(r);
       } else {
@@ -115,13 +119,13 @@ export const LiveSheetView: React.FC<LiveSheetViewProps> = ({
       }
     }
 
-    // All known students from roster + previous submissions
-    const allStudentNames = new Set<string>();
+    // All known students from preset roster + cloud roster + previous submissions
+    const allStudentNames = new Set<string>(PRESET_STUDENT_NAMES);
     for (const m of roster) {
-      if (m.active === 'Y') allStudentNames.add(m.name.trim());
+      if (m.active === 'Y') allStudentNames.add(normalizeStudentBaseName(m.name));
     }
     for (const r of records) {
-      allStudentNames.add(r.name.trim());
+      allStudentNames.add(normalizeStudentBaseName(r.name));
     }
 
     const missingList: { name: string; missingCount: number }[] = [];

@@ -40,6 +40,7 @@ import {
   getSavedStudentName,
   setSavedStudentName,
   submitExamPassToTelegramAndSheet,
+  PRESET_STUDENT_NAMES,
 } from '../utils/telegramSheetSync';
 
 type ExamQuestionType =
@@ -563,23 +564,93 @@ export const ExamView: React.FC<ExamViewProps> = ({
                   </div>
 
                   <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                    이름을 입력하고 <strong>[전송]</strong>을 누르면{' '}
+                    아래 <strong>내 이름 버튼을 원터치로 클릭</strong>하면{' '}
                     <span className="text-emerald-700 dark:text-emerald-300 font-bold">
-                      &ldquo;🎉 {studentName.trim() || 'OOO'}님이 [{levelConfig.labelKo}]{' '}
+                      &ldquo;🎉 {studentName.trim() || '이름'}님이 [{levelConfig.labelKo}]{' '}
                       {currentRound}회차를 {totalScore}점으로 통과했습니다
                       축하해주세요! 👏 (전송시간)&rdquo;
                     </span>{' '}
                     메시지가 퇴근스페인어 방에 즉시 전송됩니다.
                   </p>
 
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  {/* 7 Preset Student One-Touch Immediate Send Buttons */}
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-extrabold text-emerald-800 dark:text-emerald-300 block">
+                      ⚡ 원터치 즉시 전송 (이름을 누르면 바로 텔레그램으로 전송됩니다)
+                    </span>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {PRESET_STUDENT_NAMES.map((presetName) => {
+                        const isSelectedName =
+                          studentName.trim() === presetName;
+                        return (
+                          <button
+                            key={presetName}
+                            type="button"
+                            disabled={
+                              submittingPass || Boolean(passSentInfo?.ok)
+                            }
+                            onClick={async () => {
+                              setStudentName(presetName);
+                              setSavedStudentName(presetName);
+                              setSubmittingPass(true);
+                              setPassSentInfo(null);
+                              try {
+                                const { response, timestamp } =
+                                  await submitExamPassToTelegramAndSheet({
+                                    name: presetName,
+                                    round: currentRound,
+                                    score: totalScore,
+                                    reviewScore,
+                                    currentRoundScore,
+                                    levelLabel: levelConfig.labelKo,
+                                  });
+                                setPassSentInfo({
+                                  ok: response.ok,
+                                  timestamp,
+                                  status: response.status,
+                                  msg:
+                                    response.message ||
+                                    (response.ok
+                                      ? `전송 완료! (${timestamp})`
+                                      : response.error ||
+                                        '전송에 실패했습니다.'),
+                                });
+                              } catch (err) {
+                                setPassSentInfo({
+                                  ok: false,
+                                  msg:
+                                    err instanceof Error
+                                      ? err.message
+                                      : '전송 중 네트워크 오류가 발생했습니다.',
+                                });
+                              } finally {
+                                setSubmittingPass(false);
+                              }
+                            }}
+                            title={`${presetName} 이름으로 즉시 합격 메시지 전송`}
+                            className={`min-h-[42px] px-3 py-2 rounded-xl border-2 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer disabled:opacity-50 ${
+                              isSelectedName && passSentInfo?.ok
+                                ? 'border-emerald-600 bg-emerald-600 text-white'
+                                : 'border-emerald-400 dark:border-emerald-700 bg-white dark:bg-slate-900 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white dark:hover:bg-emerald-600 text-emerald-950 dark:text-emerald-100 shadow-2xs'
+                            }`}
+                          >
+                            <Send className="w-3.5 h-3.5 shrink-0" />
+                            <span>{presetName}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Direct Custom Name Input Fallback */}
+                  <div className="pt-1 border-t border-emerald-200/80 dark:border-emerald-800/60 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <input
                       type="text"
                       value={studentName}
                       disabled={submittingPass || Boolean(passSentInfo?.ok)}
                       onChange={(e) => setStudentName(e.target.value)}
-                      placeholder="이름을 입력하세요 (예: 홍길동)"
-                      className="flex-1 min-h-[44px] px-3.5 py-2 rounded-xl border-2 border-emerald-400 dark:border-emerald-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-extrabold outline-none focus:border-emerald-600 disabled:opacity-60"
+                      placeholder="또는 직접 이름 입력"
+                      className="flex-1 min-h-[42px] px-3.5 py-2 rounded-xl border-2 border-emerald-400 dark:border-emerald-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-extrabold outline-none focus:border-emerald-600 disabled:opacity-60"
                     />
 
                     <button

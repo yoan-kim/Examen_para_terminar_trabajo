@@ -22,6 +22,16 @@ export const DEFAULT_DEADLINE_TIME = '22:00';
 export const GOOGLE_SHEET_WEBAPP_URL =
   import.meta.env.VITE_GAS_WEBHOOK_URL || '';
 
+export const PRESET_STUDENT_NAMES = [
+  'Celeste',
+  'Daniel',
+  'Daniela',
+  'Lucia',
+  'Miguel',
+  'Selina',
+  'Lia',
+] as const;
+
 export function getSavedStudentName(): string {
   try {
     return localStorage.getItem(STUDENT_NAME_KEY) || '';
