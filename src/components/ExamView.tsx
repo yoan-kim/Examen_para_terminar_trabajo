@@ -41,7 +41,10 @@ import {
   getSavedStudentName,
   setSavedStudentName,
   submitExamPassToTelegramAndSheet,
-  PRESET_STUDENT_NAMES,
+
+  SPANISH_EXAM_DAYS,
+    getDefaultEcuadorWeekday,
+      PRESET_STUDENT_NAMES,
 } from '../utils/telegramSheetSync';
 
 type ExamQuestionType =
@@ -122,7 +125,9 @@ export const ExamView: React.FC<ExamViewProps> = ({
   const [passPanelOpen, setPassPanelOpen] = useState(false);
   const [studentName, setStudentName] = useState<string>(() =>
     getSavedStudentName()
+
   );
+    const [selectedExamDay, setSelectedExamDay] = useState<string>(() => getDefaultEcuadorWeekday());
   const [submittingPass, setSubmittingPass] = useState(false);
   const [passSentInfo, setPassSentInfo] = useState<{
     ok: boolean;
@@ -577,6 +582,32 @@ export const ExamView: React.FC<ExamViewProps> = ({
                     메시지가 퇴근스페인어 방에 즉시 전송됩니다.
                   </p>
 
+                  {/* Weekday Selector (월~금) */}
+                                    <div className="space-y-1.5">
+                                                        <div className="text-xs font-extrabold text-emerald-900 dark:text-emerald-200">
+                                                                              어느 요일 시험인가요? (당일 밤 12시 마감)
+                                                                                                  </div>
+                                                                                                                      <div className="grid grid-cols-5 gap-1.5">
+                                                                                                                                            {SPANISH_EXAM_DAYS.map((dayLabel) => {
+                                                                                                                                                                    const active = selectedExamDay === dayLabel;
+                                                                                                                                                                                            return (
+                                                                                                                                                                                                                      <button
+                                                                                                                                                                                                                                                  key={dayLabel}
+                                                                                                                                                                                                                                                                              type="button"
+                                                                                                                                                                                                                                                                                                          disabled={submittingPass}
+                                                                                                                                                                                                                                                                                                                                      onClick={() => setSelectedExamDay(dayLabel)}
+                                                                                                                                                                                                                                                                                                                                                                  className={`min-h-[38px] px-1 py-1.5 rounded-xl border font-extrabold text-xs transition-all cursor-pointer disabled:opacity-60 ${
+                                                                                                                                                                                                                                                                                                                                                                                                active
+                                                                                                                                                                                                                                                                                                                                                                                                                                ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-emerald-500'
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }`}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      >
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  {dayLabel}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    );
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          })}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
                   {/* 4-Column Selectable Name Buttons Grid (like reference image) */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {PRESET_STUDENT_NAMES.map((presetName) => {
@@ -630,8 +661,10 @@ export const ExamView: React.FC<ExamViewProps> = ({
                               round: currentRound,
                               score: totalScore,
                               reviewScore,
+
                               currentRoundScore,
                               levelLabel: levelConfig.labelKo,
+                                        examDay: selectedExamDay,
                             });
                           setPassSentInfo({
                             ok: response.ok,
